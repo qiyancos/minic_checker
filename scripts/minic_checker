@@ -1,0 +1,200 @@
+#! /bin/bash
+installPath="INSTALLPATH"
+logDir=$installPath/log
+tempDir=$installPath/temp
+ftpRoot="FTPROOT"
+userName="USERNAME"
+
+if [ ${1}x = -hx -o ${1}x = x ]
+then 
+	echo "Usage: minic_checker [Options] [Lab/File]"
+	echo "  [Options]"
+	echo "    -start,  Start auto-check system for a lab"
+	echo "    -stop,   Stop auto-check system for a lab"
+	echo "    -notify, Update README files for students with the given file"
+	echo "    -u,      Uninstall minic_checker"
+	echo "  [Lab]"
+	echo "    eeyore,  Running auto-check system for lab eeyore"
+	echo "    tigger,  Running auto-check system for lab tigger"
+	echo "    riscv32, Running auto-check system for lab riscv32"
+	echo "    riscv64, Running auto-check system for lab riscv64"
+	exit
+fi  
+
+if [ ! -d $installPath ]
+then 
+	echo "Can not locate MiniC Checker install-path!"
+	echo "Please reinstall Minic Checker!"
+	exit
+fi  
+ 
+TITLE="$installPath/scripts/echo_color blue bold -t"
+RUNMSG="$installPath/scripts/echo_color blue -t"
+WARNT="$installPath/scripts/echo_color yellow bold -t"
+WARN="$installPath/scripts/echo_color yellow bold -n -t <Warning>"
+ERROR="$installPath/scripts/echo_color red bold -n -t <Error>"
+HIGHLIGHT="$installPath/scripts/echo_color red -t"
+
+$TITLE  "================================================================="
+$WARNT  "        Author: Rock Lee. All rights reserved by Rock Lee!       "
+$TITLE  "================================================================="
+$WARNT  "                >>>> Welcom to Minic Checker! <<<<               "
+
+checkRun(){
+	$*
+	errCode=$?
+	if [ $errCode != 0 ]
+	then
+		$ERROR; echo " Error occurred while executing the command line listed below:"
+		$HIGHLIGHT "\"$*\""
+		echo "Returned with error code ($errCode)"
+		exit
+	fi
+} 
+
+checkService(){
+	if [ ${2}x != eeyorex -a ${2}x != tiggerx -a ${2}x != riscv32x -a ${2}x != riscv64x ]
+	then
+		$ERROR; echo " No such lab named as [$2]. Use -h for help!"
+		exit
+	fi
+
+	checkRun ps -ef > $tempDir/services2.tmp
+	checkRun cat $tempDir/services2.tmp | grep test_$2 > $tempDir/services.tmp
+	programCount=`checkRun cat $tempDir/services.tmp | wc -l`
+	serviceCount=`checkRun cat $tempDir/services.tmp | grep sudo | wc -l`
+	serviceCount=$[programCount - serviceCount]
+	if [ $1 = -stop ]
+	then
+		if [ $serviceCount = 0 ]
+		then 
+			$WARN; echo " Minic Checker Service for [$2] is not running. Nothing to do!"
+			exit
+		else
+			$WARN; echo " $serviceCount running Minic Checker Service(s) for [$2] detected!"
+			count=1
+			while [ $count -le $programCount ]
+			do
+				pid=(`sed -n ${count}p $tempDir/services.tmp`)
+				$RUNMSG ">> Closing Minic Checker Service [$2:${pid[1]}]..."
+				checkRun "sudo kill -9 ${pid[1]}"
+				count=$[count + 1]
+			done
+			
+			# Daemon Work
+			if [ $serviceCount -gt 0 ]
+			then 
+				$WARN;
+				$HIGHLIGHT " Do not try to start Minic Checker Service without this scipt again!"
+			fi
+			if [ ! -f $logDir/services.stat ]
+			then exit
+			fi
+			serviceStatus=(`cat $logDir/services.stat | grep $2`)	
+
+			$RUNMSG ">> Updating Minic Checker Daemon Status File..."
+			# Lock_Mod
+			while [ 1 ]
+			do
+				$RUNMSG ">> Trying to Get Lock for Minic Checker Daemon Status File"
+				if [ -f $logDir/services.lock ]
+				then sleep 1s
+				else 
+					$RUNMSG ">> Lock Minic Checker Daemon Status File"
+					checkRun "touch $logDir/services.lock"
+					break
+				fi
+			done
+			$RUNMSG ">> Update Minic Checker Daemon Status File..."
+			sed -i "/$2/c test_$2 Stopped" $logDir/services.stat
+			checkRun "rm $logDir/services.lock"
+			$RUNMSG ">> Unlock Minic Checker Daemon Status File"
+			exit
+		fi
+	elif [ $serviceCount -gt 0 ]
+	then
+		$WARN; echo " $serviceCount running Minic Checker Service(s) for [$2] detected! You may use <-stop> to stop the running service(s) before starting a new Minic Checker Service for [$2]!"
+		exit
+	else
+		$RUNMSG ">> Starting Minic Checker Service for [$2]..."
+		while [ 1 ]
+		do
+		echo "Please specify the time interval between checks:"
+			$WARNT "(Format like "10m 10h 10d" will be accepted)"
+			read interval
+			if [ ${interval}x = x ]
+			then $WARN; echo " Input must not be empty!"
+			else
+				wordCount=${#interval}
+				unit=${interval:$[wordCount - 1]:1}
+				if [ $unit != m -a $unit != h -a $unit != d ]
+				then $WARN; echo " Bad input format!"
+				else
+					sudo sed -i "/INTERVAL/c interval=$interval \#INTERVAL" $installPath/scripts/*
+					break
+				fi
+			fi
+		done
+		checkRun nohup sudo $installPath/scripts/test_$2 >> $logDir/$2.log 2>&1 &
+		pid=$!
+		$WARN;echo " Minic Checker Service for [$2] has been started with PID[$pid]"
+		
+		# Daemon Work
+		if [ ! -f $logDir/services.stat ]
+		then
+			$RUNMSG ">> Initiate Minic Checker Daemon Status File..."
+			echo -e "test_eeyore Stopped\ntest_tigger Stopped\ntest_riscv32 Stopped\ntest_riscv64 Stopped" > $logDir/services.stat
+		fi
+
+		$RUNMSG ">> Updating Minic Checker Daemon Status File..."
+		# Lock_mod
+		while [ 1 ]
+		do
+			$RUNMSG ">> Trying to Get Lock for Minic Checker Daemon Status File"
+			if [ -f $logDir/services.lock ]
+			then sleep 1s
+			else
+				$RUNMSG ">> Lock Minic Checker Daemon Status File"
+				checkRun "touch $logDir/services.lock"
+				break
+			fi
+		done
+		$RUNMSG ">> Update Minic Checker Daemon Status File..."
+		sed -i "/$2/c test_$2 $pid" $logDir/services.stat
+		checkRun "rm $logDir/services.lock"
+		$RUNMSG ">> Unlock Minic Checker Daemon Status File"
+
+		checkRun nohup sudo $installPath/scripts/mc_daemon >> $logDir/mc_daemon.log  2>&1 &
+		$WARN;echo " Minic Checker Daemon has retsarted with new target [$2]" 
+		exit
+	fi
+}
+
+notify(){
+	if [ ${1}x = x ]
+	then $ERROR; echo " Need a file as the new README. Use -h for help!"
+	elif [ ! -f "$1" ]
+	then $ERROR; echo " No such file [$1]. Use -h for help!"
+	else
+		stuList=`checkRun "cat $installPath/config/students.list"`
+		for stuID in $stuList
+		do
+			$RUNMSG ">> Updating README for Student [$stuID]..."
+			checkRun "cp $1 $ftpRoot/$stuID/README"
+			checkRun "chmod 555 $ftpRoot/$stuID/README"
+		done
+		$RUNMSG ">> README Update Over! Quit..."
+		exit
+	fi
+}
+
+if [ ${1}x = -startx -o ${1}x = -stopx ]
+then checkService $1 $2
+elif [ ${1}x = -ux ]
+then $installPath/scripts/uninstall
+elif [ ${1}x = -notifyx ]
+then notify $2
+else
+	$ERROR; echo " Bad options. Use -h for help!"
+	exit
+fi

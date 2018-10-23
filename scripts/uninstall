@@ -1,0 +1,139 @@
+#! /bin/bash
+installPath="INSTALLPATH"
+logDir=$installPath/log
+ftpRoot="FTPROOT"
+userName="USERNAME"
+   
+TITLE="$installPath/scripts/echo_color blue bold -t"
+RUNMSG="$installPath/scripts/echo_color blue -t"
+WARNT="$installPath/scripts/echo_color yellow bold -t"
+WARN="$installPath/scripts/echo_color yellow bold -n -t <Warning>"
+ERROR="$installPath/scripts/echo_color red bold -n -t <Error>"
+HIGHLIGHT="$installPath/scripts/echo_color red -t"
+
+
+checkRun(){
+	$*
+	errCode=$?
+	if [ $errCode != 0 ]
+	then
+		$ERROR; echo " Error occurred while executing the command line listed below:"
+		$HIGHLIGHT "\"$*\""
+		echo "Returned with error code ($errCode)"
+		exit
+	fi
+} 
+
+doExit(){
+ 	$WARNT "              Thank you for using Minic Checker!                 "
+	$TITLE "==================Uninstallation Complete!======================="
+	exit
+}
+
+$WARN; echo -n " Are you confirmed to uninstall Minic Checker? [Y/N]"
+read flag
+if [ ${falg}x != Yx -a ${flag}x != yx -a ${falg}x != x ]
+then 
+	$RUNMSG ">> Uninstallation Canceled. Quit..."
+	exit
+fi
+echo -n "Would you like to keep the config files for heirloom-mailx and vsftpd? [Y/N] "
+read flag
+if [ ${flag}x != Yx -a ${flag}x != yx -a ${flag}x != x ]
+then
+	$WARN; echo " You have chosen to restore config files from backup!"
+	backupList=`checkRun "ls -tr $installPath/backup"` 
+	backupCount=`echo $backupList | wc -w`
+	if [ $backupCount -gt 1 ]
+	then 
+		$WARN; echo "$backupCount backup folders detected for restoration!"
+		echo "You will have to choose the one you would like to use for restoration:"
+		backupID=1
+		for backup in $backupList
+		do
+			echo "[$backupID] `echo $backup | base64 -d`"
+			backupID=$[backupID + 1]
+		done
+		backupList=($backupList)
+		read backupID
+		backupDir=$installPath/backup/${backupList[$[backupID - 1]]}
+	else
+		echo "We have found backup files created at [`echo $backupList | base64 -d`]"
+		echo -n "Would you like to use it? [Y/N] "
+		read flag
+		if [ ${flag}x = Yx -o ${flag}x = yx -o ${flag}x = x ]
+		then backupDir=$installPath/backup/$backupList
+		else 
+			$ERROR; echo " You must be joking!"
+			backupDir=None
+		fi
+	fi
+	if [ $backupDir != None ]
+	then
+		$RUNMSG ">> Restoring Config Files "
+		checkRun "sudo rm -rf /etc/vsftpd* /etc/pam.d/vsftpd /etc/s-nail.rc"
+		if [ -d $backupDir/vsftpd ]	
+		then checkRun "sudo cp -r $backupDir/vsftpd /etc/"
+		fi
+		if [ -f $backupDir/pam_vsftpd ]
+		then checkRun "sudo cp $backupDir/pam_vsftpd /etc/pam.d/vsftpd"
+		fi
+		if [ -f $backupDir/vsftpd.conf ]
+		then checkRun "sudo cp $backupDir/vsftpd.conf /etc/"
+		fi
+		if [ -f $backupDir/s-nail.rc ]
+		then checkRun "sudo cp $backupDir/s-nail.rc /etc/"
+		fi
+		$RUNMSG ">> Config Files Already Restored!"
+	else $WARN; echo " Config files will not be restored!"
+	fi
+else $WARN; echo " Config files will not be restored!"
+fi
+	
+$RUNMSG ">> Removing Minic Checker..."
+checkRun "sudo rm /bin/minic_checker"
+checkRun "sudo rm -rf $installPath"
+
+echo "Would you like to delete USER[$userName], which is used as Minic Checker FTP host user? [Y/N] "
+read flag
+if [ ${flag}x = Yx -o ${flag}x = yx -o ${flag}x = x ]
+then 
+	checkRun "sudo userdel $userName"
+	$RUNMSG ">> User[$userName] has been removed!"
+	echo "Would like to delete the Root path [$ftpRoot] used for USER[$userName]?"
+	echo -n "[Y/N] "
+	read flag
+	if [ ${flag}x = Yx -o ${flag}x = yx -o ${flag}x = x ]
+	then 
+		$HIGHLIGHT "Are You Confirmed to DELETE $ftpRoot?"
+		echo -n "[Y/N] "
+		read flag
+		if [ ${flag}x = Yx -o ${flag}x = yx -o ${flag}x = x ]
+		then 
+			$RUNMSG ">> Removing $ftpRoot..."
+			checkRun "sudo rm -rf $ftpRoot"
+			doExit
+		fi
+	fi
+fi
+
+echo -n "Would you like to remove the homework submitted by the students? [Y/N] "
+read flag
+if [ ${flag}x = Yx -o ${flag}x = yx -o ${flag}x = x ]
+then
+	$HIGHLIGHT "Are You Confirmed to DELETE the homework?"
+	echo -n "[Y/N] "
+	read flag
+	if [ ${flag}x = Yx -o ${flag}x = yx -o ${flag}x = x ]
+	then
+		stuList=`checkRun "cat $installPath/config/students.list"`
+		for stuID in $stuList
+		do
+			stuRoot=$ftpRoot/$stuID
+			$RUNMSG ">> Removing Student[$stuID]-$stuRoot"
+			checkRun "sudo rm -rf $stuRoot"
+		done
+	fi
+	doExit
+else doExit
+fi

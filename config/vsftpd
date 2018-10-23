@@ -1,0 +1,10 @@
+auth    sufficient	/lib/x86_64-linux-gnu/security/pam_userdb.so     db=/etc/vsftpd/vusers
+account sufficient	/lib/x86_64-linux-gnu/security/pam_userdb.so     db=/etc/vsftpd/vusers
+
+# Note: vsftpd handles anonymous logins on its own. Do not enable pam_ftp.so.
+
+# Standard pam includes
+#@include common-account
+#@include common-session
+#@include common-auth
+#auth	required	pam_shells.so

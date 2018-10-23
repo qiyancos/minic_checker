@@ -1,0 +1,329 @@
+#! /bin/bash
+root=`dirname $0`
+#Default Installation Path
+installPath=(`cat /etc/passwd | grep "${USER}:" | sed 's/:/ /g'`) 
+installPath=/${installPath[4]}/.Minic_Checker
+dateTag=`date | base64`
+cd $root
+
+abandon(){
+	$WARN; echo " Install Wizard exiting due to problem listed below:"
+	$HIGHLIGHT $*
+	$TITLE  "======================Installation Stopped!======================"
+	exit
+}
+
+checkRun(){
+	$*
+	errCode=$?
+	if [ $errCode != 0 ]
+	then 
+		$ERROR; echo " Error encountered while executing the command line listed below:"
+		$HIGHLIGHT "\"$*\""
+		echo "Returned with error code ($errCode)"
+		exit
+	fi
+}
+
+checkRun "chmod +x ./scripts/echo_color"
+TITLE="./scripts/echo_color blue bold -t"
+ERROR="./scripts/echo_color red bold -n -t <Error>"
+WARNT="./scripts/echo_color yellow bold -t"
+WARN="./scripts/echo_color yellow bold -n -t <Warning>"
+RUNMSG="./scripts/echo_color blue -t"
+HIGHLIGHT="./scripts/echo_color red -t"
+
+$TITLE	"================================================================="
+$WARNT	"        Author: Rock Lee. All rights reserved by Rock Lee!       "
+$TITLE	"================================================================="
+$WARNT	"        >>>> Welcom to Minic Checker Install Wizard! <<<<        "
+$WARNT	"  Please follow the guide to finish Minic Checker installation!  "
+
+# Start File Checking
+$RUNMSG ">> Checking Local Files"
+if [ ! -f ./students.list ]
+then abandon "Virtual-user list [students.list] must be specified!"
+fi
+if [ -f ./config/vsftpd -a -f ./config/vsftpd.conf -a -f ./config/s-nail.rc -a -f ./config/minic_checker.mf ]
+then echo "Source file packages is intact, good to go!"
+else abandon "Source file package is not intact!"
+fi
+$RUNMSG ">> Local Files Check Passed!"
+
+# Install Software
+$RUNMSG	">> Initiating Environment"
+checkRun "sudo apt-get update"
+checkRun "sudo apt-get upgrade"
+checkRun "sudo apt-get install db-util vsftpd cmake flex bison"
+checkRun "sudo apt-get install gcc-5-multilib g++-5-multilib"
+echo -n "Would you like to use the default installation path [$installPath]? [Y/N]"
+read flag
+if [ ${flag}x != yx -a ${flag}x != Yx -a ${flag}x != x ]
+then 
+	while [ 1 ]
+	do 
+		echo "Please ENTER the new FULL path where Minic Checker should be"
+		echo -n "installed:  "
+		read installPath
+		echo -n "Install Minic Checker to [$installPath]? [Y/N]"
+		read flag
+		if [ ${flag}x = Yx =o ${flag}x = yx -o ${flag}x = x ]
+		then break
+		fi
+	done 
+fi
+$WARN; echo " Minic Checker will be installed to [$installPath]!"
+
+if [ ! -d $installPath ]
+then checkRun "mkdir -p $installPath"
+fi
+if [ ! -d $installPath/backup ]
+then checkRun "mkdir $installPath/backup"
+fi
+if [ ! -d $installPath/config ]
+then checkRun "mkdir $installPath/config"
+fi
+$RUNMSG	">> Environment Initiation Successful!"
+
+# Setup FTP
+$RUNMSG ">> Setup FTP"
+$WARN; echo	" Following processes will change your current FTP config files! Old config files will be saved to [$installPath/backup/$dateTag]" 
+checkRun "mkdir $installPath/backup/$dateTag"
+if [ -f /etc/vsftpd.conf ]
+then checkRun "cp /etc/vsftpd.conf $installPath/backup/$dateTag/vsftpd.conf"
+fi
+if [ -d /etc/vsftpd ]
+then checkRun "cp -r /etc/vsftpd $installPath/backup/$dateTag/vsftpd"
+fi
+if [ -f /etc/pam.d/vsftpd ]
+then checkRun "cp /etc/pam.d/vsftpd $installPath/backup/$dateTag/pam_vsftpd"
+fi
+
+checkRun "sudo cp ./config/vsftpd.conf /etc/"
+checkRun "sudo cp ./config/vsftpd /etc/pam.d/vsftpd"
+
+ftpRunning=`sudo netstat -antup | grep vsftpd`
+if [ "${ftpRunning}x" = x ]
+then checkRun "sudo service vsftpd start"
+else checkRun "sudo service vsftpd restart"
+fi
+
+ftpRunning=`checkRun "sudo netstat -antup | grep vsftpd"`
+if [ "${ftpRunning}x" = x ]
+then
+	$ERROR; echo " Problem encountered while trying to start FTP!"
+	exit
+fi
+$RUNMSG	">> FTP Setup Finished!"
+
+# Setup FTP host user 
+$RUNMSG ">> Initiating Host FTP User"
+userRoot=none
+while [ 1 ]
+do
+	echo 	"Please ENTER the name you want to use as the Host FTP acount:"
+	read userName
+	if [ ${userName}x = x ]
+	then $WARN; echo " Username must not be empty!"
+	else 
+		echo -n "Is Username [$userName] correct? [Y/N]"
+		read flag
+		if [ ${flag}x = yx -o ${flag}x = Yx -o ${flag}x = x ]
+		then
+			userInfo=`cat /etc/passwd | grep "${userName}:"`
+			if [ ${userInfo}x != x ]
+			then 
+				if [ $userName != root ]
+				then $WARN; echo -n " User[$userName] already exist, would you like to use it? [Y/N]"
+				else 
+					$WARN; $HIGHLIGHT " It seems that you want to use ROOT as ftp host user! We strongly suggest you not to do that! otherwise you may suffer from system security problem while running Minic Checker Services!"
+					echo -n "Do you still want to use it? [Y/N] "
+				fi
+				read flag
+				if [ ${flag}x = Yx -o ${flag}x = yx -o ${flag}x = x ]
+				then
+					userRoot=(`echo $userInfo | sed 's/:/ /g'`)
+					userRoot=${userRoot[4]}
+					break
+				fi
+			else break
+			fi
+		fi
+	fi
+done
+
+if [ "$userRoot" = none ]
+then
+	$RUNMSG ">> Creating new user [$userName]..."
+	if [ ! -d /home/$userName ]
+	then checkRun "mkdir -m 555 /home/$userName"
+	fi
+	userRoot=/home/$userName
+	checkRun "useradd -d $userRoot -s /bin/bash $userName"
+	echo	"Please set password for [$userName]"
+	errCode=1
+	while [ $errCode != 0 ]
+	do 
+		sudo passwd $userName
+		errCode=$?
+	done
+	sudo sed -i "/guest_username/c guest_username=$userName" /etc/vsftpd.conf
+
+fi
+$RUNMSG ">> Host FTP User Initiation Completed!"
+
+# Setup virtual users for students
+$RUNMSG ">> Add Students as FTP Virtual Users"
+if [ -d /etc/vsftpd ]
+then checkRun "sudo rm -r /etc/vsftpd"
+fi
+checkRun "sudo mkdir -p /etc/vsftpd/config"
+stuCount=(`checkRun "wc -l ./students.list"`)
+stuCount=${stuCount[0]}
+lineNum=1
+while [ $lineNum -le $stuCount ]
+do
+	stuID=`checkRun "sed -n ${lineNum}p ./students.list"`
+	if [ ${stuID}x != x ]
+	then
+		echo	"Creating folders for student $stuID!"
+		sudo bash -c "echo -e "$stuID" >> /etc/vsftpd/vusers.list"
+		sudo bash -c "echo -e "$stuID" >> /etc/vsftpd/vusers.list"
+		stuRoot=$userRoot/$stuID
+		checkRun "mkdir -p -m 555 $stuRoot"
+		checkRun "mkdir -p -m 777 $stuRoot/eeyore"
+		checkRun "mkdir -p -m 777 $stuRoot/tigger"
+		checkRun "mkdir -p -m 777 $stuRoot/riscv32"
+		checkRun "mkdir -p -m 777 $stuRoot/riscv64"
+		checkRun "cp ./config/README_stu $stuRoot/README"
+		checkRun "chmod 555 $stuRoot/README"
+		sudo bash -c "echo \"local_root=$stuRoot\" > /etc/vsftpd/config/$stuID"
+	fi
+	lineNum=$[lineNum + 1]
+done
+checkRun "sudo db_load -T -t hash -f /etc/vsftpd/vusers.list /etc/vsftpd/vusers.db"
+checkRun "sudo chmod 600 /etc/vsftpd/vusers.db"
+checkRun "sudo service vsftpd restart"
+ftpRunning=`checkRun "sudo netstat -antup | grep vsftpd"`
+if [ "${ftpRunning}x" = x ]
+then
+	$ERROR; echo " Problem encountered while trying to restart FTP!"
+	exit
+fi
+$RUNMSG ">> FTP Virtual Users Setup Completed!"
+
+$RUNMSG	">> Initiate Auto-Mail-Sending System"
+checkRun "sudo apt-get install sendmail"
+checkRun "sudo apt-get install heirloom-mailx"
+
+$WARN; echo   " Following processes will change your current heirloom-mailx config file! Old config file will be saved to [$installPath/backup/$dateTag]" 
+if [ -f /etc/s-nail.rc ]
+then checkRun "cp /etc/s-nail.rc $installPath/backup/$dateTag/"
+fi
+checkRun "sudo cp ./config/s-nail.rc /etc/s-nail.rc"
+
+ftpRunning=`checkRun "sudo netstat -antup | grep sendemail"`
+if [ "${ftpRunning}x" = x ]
+then
+	$ERROR; echo " Problem encountered with sendmail installation!"
+	exit
+fi
+
+while [ 1 ]
+do
+	echo "Please ENTER your email address (Only *@pku.edu.cn is supported!):"
+	read emailAddr
+	postfix=(`echo $emailAddr | sed 's/@/ /g'`)
+	if [ ${postfix[1]}x != "pku.edu.cnx" ]
+	then $WARN; echo " Bad email address!"
+	else break
+	fi
+done 
+sudo sed -i "s/EMAIL/$emailAddr/g" /etc/s-nail.rc
+while [ 1 ]
+do
+	echo -n "Please ENTER your password for $emailAddr:"
+	read -s password_test; echo
+	echo -n "Please RETYPE your password:"
+	read -s password; echo
+	if [ ${password_test}x != ${password}x ]
+	then
+		$WARN; echo " Passwords mismatch!"
+		continue
+	fi
+	if [ ${password}x = x ]
+	then $WARN; echo " Password should not be empty!"
+	else break
+	fi
+done
+sudo sed -i "s/PASSWORD/$password/g" /etc/s-nail.rc
+$RUNMSG ">> Restarting sendmail..."
+checkRun "sudo service sendmail restart"
+ftpRunning=`checkRun "sudo netstat -antup | grep sendemail"`
+if [ "${ftpRunning}x" = x ]
+then
+    $ERROR; echo " Problem encountered while trying to restart sendmail!"
+    exit
+fi
+$RUNMSG ">> Auto-Mail-Sending System Initiation Completed!"
+
+$RUNMSG ">> Copy Files and Build Simulator Required for Minic Checker"
+# Copy Files
+checkRun "g++ $installPath/src/build_mf.cpp -o ./bin/build_mf"
+$RUNMSG ">> Building Simulator..."
+cd ./src/simulator
+checkRun cmake
+checkRun make
+cd ../..
+checkRun "cp ./src/simulator/bin/* ./bin/"
+checkRun "cp -r ./bin $installPath"
+checkRun "cp -r ./test_src $installPath/"
+checkRun "mkdir -p $installPath/log"
+checkRun "mkdir -p $installPath/config"
+checkRun "mkdir -p $installPath/temp"
+checkRun "cp -r ./scripts $installPath/"
+checkRun "sudo mv $installPath/scripts/minic_checker /bin/"
+checkRun "cp ./config/minic_checker.mf  $installPath/config/"
+checkRun "sudo chmod 755 /bin/minic_checker"
+checkRun "cp ./students.list $installPath/config/"
+# Modify Files
+sedList="/bin/minic_checker $installPath/scripts/* $installPath/config/*"
+sudo sed -i "s%USERNAME%$userName%g" $sedList
+sudo sed -i "s%INSTALLPATH%$installPath%g" $sedList
+sudo sed -i "s%FTPROOT%$userRoot%g" $sedList
+$RUNMSG ">> Files Copy Completed!"
+
+$RUNMSG ">> Setup Email Used for Notification"
+while [ 1 ]
+do
+	echo "Please ENTER the email address you would like use to recieve notification:"
+	read notifyAddr
+	if [ ${notifyAddr}x = x ]
+	then $WARN; echo " Email Address must not be empty"
+	else
+		verifyCode=`echo $[(RANDOM % 100) * 90 / 100 + 10] | base64`
+		echo -e "    Welcom to Minic Checker!\n    Your verification code is [$verifyCode]! \n    This email is only used for test and verification. If you have recieved this email, that means your auto-mail-sending system works well!" | mail -s "Minic Checker Verification Email" $notifyAddr
+		if [ $? != 0 ]
+		then abandon "Verification email send failed!"
+		fi
+		$WARN; echo    "An verification email has been sent to $notifyAddr for test! Please makesure that you have recieved it so that you can ENTER the verification code showed in your email (The verification code is case-sensitive and you may ENTER [N/n] to quit):"
+		while [ 1 ]
+		do
+		    read flag
+		    if [ ${flag}x = Nx -o ${flag}x = nx ]
+		    then abandon "Auto-Mail-Sending system check failed!"
+		    elif [ ${flag}x != ${verifyCode}x ]
+		    then
+		        echo $WARN; echo " Verification Codes Mismatch!"
+		        echo -n "Please RETYPE the verification code:"
+		    else break
+		    fi
+		done
+		break
+	fi
+done
+
+sudo sed -i "s%NOTIFYADDR%$notifyAddr%g" /bin/minic_checker $installPath/scripts/*
+$RUNMSG ">> Email Used for Notification Setup Completed!"
+
+$TITLE	"====================Installation Complete!======================="

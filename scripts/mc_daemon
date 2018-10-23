@@ -1,0 +1,130 @@
+#! /bin/bash
+installPath="INSTALLPATH"
+interval=5m #INTERVAL
+logDir=$installPath/log
+tempDir=$installPath/temp
+notifyAddr="NOTIFYADDR"
+SID=$RANDOM
+#sleep 15m
+checkRun(){
+	$*
+	errCode=$?
+	if [ $errCode != 0 ]
+	then 
+		echo "[`date`][SID] Error occurred while executing command line: \"$*\". Returned with error code ($errCode)"
+	exit
+	fi
+}
+
+mainDaemon(){
+	while [ 1 ]
+	do
+		# Get lock
+		echo "Check start at `date`" > $logDir/mc_daemon.rep
+		echo "[`date`][$SID] Start daemon check. Getting lock..."
+		while [ 1 ]
+		do
+			if [ -f $logDir/services.lock ]
+			then sleep 1s
+			else
+				echo "[`date`][$SID] Lock daemon status file"
+				checkRun touch $logDir/services.lock
+				break
+			fi
+		done
+		
+		serviceCount=`checkRun cat $logDir/services.stat | wc -l`
+		line=1
+		needMail=0
+		needCheck=$serviceCount
+		while [ $line -le $serviceCount ]
+		do
+			serviceStatus=(`checkRun sed -n ${line}p $logDir/services.stat`)	
+			checkRun ps -ef > $tempDir/mc_daemon_check2.tmp
+			checkRun cat $tempDir/mc_daemon_check2.tmp | grep ${serviceStatus[0]} > $tempDir/mc_daemon_check.tmp
+			programCount=`checkRun cat $tempDir/mc_daemon_check.tmp | wc -l`
+			realCount=`checkRun cat $tempDir/mc_daemon_check.tmp | grep sudo | wc -l`
+			realCount=$[programCount - realCount]
+
+			case ${serviceStatus[1]} in
+			Stopped)
+				matchCount=0
+				otherCount=$realCount
+				needCheck=$[needCheck - 1];;
+			*)
+				matchCount=`checkRun cat $tempDir/mc_daemon_check.tmp | grep " ${serviceStatus[1]} " | wc -l`
+				otherCount=$[realCount - matchCount * 2]
+				# Accidentally stopped
+				if [ $matchCount = 0 ]
+				then
+					needMail=1
+					echo "${serviceStatus[0]}: Stopped by accident;" >> $logDir/mc_daemon.rep
+					sed -i "/${serviceStatus[0]}/c ${serviceStatus[0]} Stopped" $logDir/services.stat
+					echo "[`date`][$SID] Service [${serviceStatus[0]}] accidental stop detected"
+					needCheck=$[needCheck - 1]
+				fi;;
+			esac
+			
+			# Too many running services
+			if [ $otherCount -gt 0 -o $matchCount -gt 1 ]
+			then
+				needCheck=$[needCheck + 1]
+				# Mail Event Count Down
+				if [ ${mailInterval[$line]}x = x ]
+				then 
+					needMail=1
+					mailInterval[$line]=72
+				elif [ ${mailInterval[$line]} = 0 ]
+				then 
+					needMail=1
+					mailInterval[$line]=72
+				else mailInterval[$line]=$[${mailInterval[$line]} - 1]
+				fi
+
+				echo "${serviceStatus[0]}: Too many running instances detected:" >> $logDir/mc_daemon.rep
+				cat $tempDir/mc_daemon_check.tmp >> $logDir/mc_daemon.rep
+				echo "[`date`][$SID] Unexpected running instance(s) for service [${serviceStatus[0]}] detected"
+			else mailInterval[$line]=0
+			fi
+			
+			line=$[line + 1]
+		done
+		echo "[`date`][$SID] Unlock daemon status file..."
+		checkRun rm $logDir/services.lock
+		
+		if [ $needMail != 0 ]
+		then
+			echo "[`date`][$SID] Send daemon check report to $notifyAddr..."
+			$installPath/scripts/send_mail $notifyAddr -f $installPath/config/minic_checker.mf -t DAEMON
+		fi
+
+		if [ $needCheck = 0 ]
+		then
+			echo "[`date`][$SID] No service to watch! Quit..."
+			exit
+		else sleep $interval
+		fi
+	done
+}
+
+checkRun ps -ef > $tempDir/mc_daemon_start2.tmp
+checkRun cat $tempDir/mc_daemon_start2.tmp | grep mc_daemon > $tempDir/mc_daemon_start.tmp
+programCount=`checkRun cat $tempDir/mc_daemon_start.tmp | wc -l`
+daemonCount=`checkRun cat $tempDir/mc_daemon_start.tmp | grep sudo | wc -l`
+daemonCount=$[programCount - daemonCount]
+
+if [ $daemonCount -gt 1 ]
+then
+	if [ $daemonCount = 2 ]
+	then 
+		pid=(`checkRun cat $tempDir/mc_daemon_start.tmp`)
+		echo "[`date`][$SID] Daemon[${pid[1]}] is already runing. Quit..."
+	elif [ $daemonCount -gt 2 ]
+	then 
+		echo "[`date`][$SID] Fatal Error: Too many running daemon program detected! Information is listed below:" 
+		checkRun cat $tempDir/mc_daemon_start.tmp
+		echo "[`date`][$SID] Quit..."
+	fi
+	exit
+else mainDaemon
+fi

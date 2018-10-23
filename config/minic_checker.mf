@@ -1,0 +1,85 @@
+LEVEL{
+SAMPLE DAEMON CHECK
+EEYORE TIGGER RISCV32 RISCV64
+NO_COMPILE_METHOD COMPILE_TIMEOUT COMPILE_ERROR NO_BINARY_FILE RUN_TIMEOUT RUNTIME_ERROR SIM_TIMEOUT SIM_ERROR SIM_WRONG_RESULT TEST_PASS
+TITLE CONTENT ATTACH
+}LEVEL
+
+SAMPLE{
+TITLE{
+Welcom to Auto-Mail System!
+}TITLE
+
+CONTENT{
+  You may read the sample file attached below to Know how to write a proper mail format file!  
+}CONTENT
+
+ATTACH{
+/root/.Minic_Checker/config/minic_checker.mf
+}ATTACH
+}SAMPLE
+
+ATTACH{
+}ATTACH
+
+DAEMON{
+TITLE{
+MiniC Checker Daemon Report
+}TITLE
+
+CONTENT{
+/root/.Minic_Checker/log/mc_daemon.rep
+}CONTENT
+}DAEMON
+
+CHECK{
+TITLE{
+MiniC Checker Report
+}TITLE
+EEYORE{
+CONTENT{
+/root/.Minic_Checker/log/eeyore.rep
+}CONTENT
+	
+NO_COMPILE_METHOD{
+}NO_COMPILE_METHOD
+COMPILE_TIMEOUT{
+}COMPILE_TIMEOUT
+COMPILE_ERROR{
+ATTACH{
+/root/.Minic_Checker/temp/compile.log
+}ATTACH
+}COMPILE_ERROR
+NO_BINARY_FILE{
+}NO_BINARY_FILE
+RUN_TIMEOUT{
+}RUN_TIMEOUT
+RUNTIME_ERROR{
+ATTACH{
+/root/.Minic_Checker/temp/compile_c2e.log
+}ATTACH
+}RUNTIME_ERROR
+SIM_TIMEOUT{
+}SIM_TIMEOUT
+SIM_ERROR{
+ATTACH{
+/root/.Minic_Checker/temp/runtime.log
+}ATTACH
+}SIM_ERROR
+SIM_WRONG_RESULT{
+}SIM_WRONG_RESULT
+TEST_PASS{
+}TEST_PASS
+}EEYORE
+}CHECK
+
+TITLE{
+missing title
+}TITLE
+
+TIGGER{
+}TIGGER
+RISCV32{
+}RISCV32
+RISCV64{
+}RISCV64

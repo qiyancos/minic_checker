@@ -1,0 +1,170 @@
+#! /bin/bash
+installPath="INSTALLPATH"
+tempDir=$installPath/temp
+tarSize=1
+attachSize=50
+
+if [ ${1}x = -hx -o ${1}x = x ]
+then 
+	echo "Usage: send_mail targetEmail [-f format_file] [-t level_tags]"
+	echo "  -f,   This option is used to idetify format file for mailing"
+	echo "  -t,   The level tag(s) followed will be used to read format file"
+	#echo "Format File:"
+	#echo "  Format file is constructed with plain text and level tag. Level tag"
+	exit
+else 
+	targetAddr=$1
+	shift
+fi
+
+readFormat(){
+	awk "/LEVEL{/{print NR}" $formatFile > $1
+	awk "/}LEVEL/{print NR}" $formatFile >> $1
+	tagCount=(`cat $1`)
+	if [ ${#tagCount[*]} != 2 ]
+	then
+		if [ ${#tagCount[*]} -lt 2 ]
+		then echo "Error: Level tag defination not intact for \"LEVEL\". Use -h for help!"
+		else echo "Error: Too many level tag defination for \"LEVEL\". Use -h for help!"
+		fi
+		exit
+	else sed -n $[${tagCount[0]} + 1],$[${tagCount[1]} - 1]p $formatFile > $1
+	fi
+	echo > $2
+	tagCount=`cat $1 | wc -l`
+	count=1
+	while [ $count -le $tagCount ]
+	do
+		levelTagList=`sed -n ${count}p $1`
+		for tag in $levelTagList
+		do
+			startLine=(`awk "/$tag{/{print NR}" $formatFile`)
+			endLine=(`awk "/}$tag/{print NR}" $formatFile`)
+			if [ ${#startLine[*]} != ${#endLine[*]} ]
+			then 
+				echo "Error: Missing start or end level tag for \"$tag\". Use -h for help!"
+				exit
+			else
+				echo "$count $[${#startLine[*]} * 2] $tag" >> $2
+				echo ${startLine[*]} >> $2
+				echo ${endLine[*]} >> $2
+			fi
+		done
+		count=$[count + 1]
+	done
+	echo "-1 -1" >> $2
+	echo $levelTag | sed 's/:/ /g' >> $2
+	argLine=(`$installPath/bin/build_mf < $2`)
+	#echo ${argLine[*]}
+	if [ ${argLine[0]}x = Errorx ]
+	then 
+		echo "Error: Level tag chain \"$levelTag\" break from \"${argLine[2]}\" in \"$formatFile\". Use -h for help!"
+		exit
+	fi
+	readTitle ${argLine[0]} ${argLine[1]}
+	readContent ${argLine[2]} ${argLine[3]}
+	readAttachment ${argLine[4]} ${argLine[5]}
+}
+
+readTitle(){
+	if [ $1 = 0 -o $2 = 0 ]
+	then 
+		echo "Error: Title not defined for $levelTag. Use -h for help!"
+		exit
+	fi
+	
+	if [ $[$1 + 1] -le $[$2 - 1] ]
+	then
+		sed -n $[$1 + 1],$[$2 - 1]p $formatFile > $tempDir/send_mail.tmp
+	else
+		echo "Error: Title must not be empty for $levelTags. Use -h for help!"
+		exit
+	fi
+	
+	if [ -s $tempDir/send_mail.tmp ]
+	then title="-s \"`cat $tempDir/send_mail.tmp`\""
+	else
+		echo "Error: Title must not be empty for $levelTags. Use -h for help!"
+		exit
+	fi
+}
+
+readContent(){
+	if [ $[$1 + 1] -gt $[$2 - 1] ]
+	then return
+	fi
+	sed -n $[$1 + 1],$[$2 - 1]p $formatFile > $tempDir/send_mail.tmp
+	if [ -s $tempDir/send_mail.tmp ]
+	then 
+		content=`cat $tempDir/send_mail.tmp`
+		#echo $content
+		if [ ! -f $content ]
+		then content="< $tempDir/send_mail.tmp"
+		# Move large content to attachment
+		elif [ `cat $content | wc -l` -lt $attachSize ]
+		then content="< $content"
+		else
+			content="<<< The content of this Email was automaticly moved to attachment [`basename $content`] due to large size!"
+			attachmentAdd=$content
+		fi
+	fi
+}
+
+readAttachment(){
+	if [ $[$1 + 1] -gt $[$2 - 1] ]
+	then return
+	fi
+	sed -n $[$1 + 1],$[$2 - 1]p $formatFile > $tempDir/send_mail.tmp
+	if [ -s $tempDir/send_mail.tmp ]
+	then 
+		fileList=`cat $tempDir/send_mail.tmp`
+		fileCount=0
+		for file in $fileList
+		do
+			if [ -f $file ]
+			then 
+				attachment="$attachment $file"
+				fileCount=$[fileCount + 1]
+			fi
+		done
+		if [ $fileCount -gt $tarSize ]
+		then 
+			tar -cf $tempDir/send_mail.tar $attachment
+			attachment=$tempDir/send_mail.tar
+		fi
+	fi
+	attachment="$attachment $attachmentAdd"
+	if [ "${attachment}x" != x ] 
+	then attachment="-a $attachment"
+	fi
+}
+
+arguments=($*)
+argCount=0
+while [ $argCount -lt $# ]
+do
+	arg=${arguments[$argCount]}
+	case $arg in
+	-f)
+		formatFile=${arguments[$[argCount + 1]]}
+		if [ ! -f $formatFile ]
+		then 
+			echo "Error: No such format file. Use -h for help!"
+			exit
+		fi
+		argCount=$[argCount + 1]
+		argFlag=0;;
+	-t) argFlag=1;;
+	*)
+		if [ ${argFlag}x = 1x ]
+		then levelTag="$levelTag:$arg"
+		else
+			echo "Error: Bad arguments [$arg]. Use -h for help!"
+			exit
+		fi;;
+	esac
+	argCount=$[argCount + 1]
+done
+
+readFormat $tempDir/send_mail1.tmp $tempDir/send_mail2.tmp
+bash -c "mail $title $attachment $targetAddr $content"
