@@ -269,10 +269,10 @@ $RUNMSG ">> Auto-Mail-Sending System Initiation Completed!"
 
 $RUNMSG ">> Copy Files and Build Simulator Required for Minic Checker"
 # Copy Files
-checkRun "g++ $installPath/src/build_mf.cpp -o ./bin/build_mf"
+checkRun "g++ ./src/build_mf.cpp -o ./bin/build_mf"
 $RUNMSG ">> Building Simulator..."
 cd ./src/simulator
-checkRun cmake
+checkRun cmake .
 checkRun make
 cd ../..
 checkRun "cp ./src/simulator/bin/* ./bin/"
