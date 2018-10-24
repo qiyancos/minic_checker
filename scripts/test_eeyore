@@ -45,6 +45,19 @@ checkLab(){
 		echo -e "  Check report for lab \"eeyore\":\n" > $logDir/eeyore.rep
 		echo "[`date`][$SID] Found changes with file(s) from $eeyoreDir, start compiling!"
 		checkRun "cd $eeyoreDir"
+		fileList=(`ls`)
+		if [ "`echo ${changeFlag[*]} | grep tar`x" != x -o ${#fileList[*]} = 1 ]
+		then uncompressFlag=1
+		else uncompressFlag=0
+		fi
+		if [ -f ./$stuID.tar -a $uncompressFlag = 1 ]
+		then 
+			checkRun tar -xf ./$stuID.tar
+			if [ -d ./$stuID ]
+			then checkRun cp -r ./$stuID/* ./
+			fi
+		fi
+
 		if [ -f ./makefile -o -f ./Makefile ]
 		then echo -e "cd $eeyoreDir\nmake" | timeout $timeOut su - $userName > $tempDir/compile.log 2>&1 
 		elif [ -f ./compile ]
@@ -99,6 +112,8 @@ checkLab(){
 			elif [ $errCode != 0 ]
 			then
 				mailFormat=RUNTIME_ERROR
+				#echo -e "\nRunning result may hold some useful information:\n" >> $tempDir/compile_c2e.log
+				#cat $tempDir/${testName}_$SID.e >> $tempDir/compile_c2e.log
 				echo "Error: Runtime error occurred while compiling MiniC file \"${testName}.c\" to eeyore with your excutable file! You may find more details below or in the file attached with this email." >> $logDir/eeyore.rep
 				echo "[`date`][$SID] Runtime error occurred while running eeyore for \"${testName}.c\" with student[$stuID]'s eeyore"
 				return

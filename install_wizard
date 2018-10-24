@@ -167,9 +167,8 @@ then
 		sudo passwd $userName
 		errCode=$?
 	done
-	sudo sed -i "/guest_username/c guest_username=$userName" /etc/vsftpd.conf
-
 fi
+sudo sed -i "/guest_username/c guest_username=$userName" /etc/vsftpd.conf
 $RUNMSG ">> Host FTP User Initiation Completed!"
 
 # Setup virtual users for students

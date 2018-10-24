@@ -82,7 +82,7 @@ checkService(){
 			done
 			
 			# Daemon Work
-			if [ $serviceCount -gt 0 ]
+			if [ $[serviceCount * 2 - programCount] -gt 0 ]
 			then 
 				$WARN;
 				$HIGHLIGHT " Do not try to start Minic Checker Service without this scipt again!"
