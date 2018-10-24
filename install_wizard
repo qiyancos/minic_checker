@@ -277,6 +277,7 @@ cd ../..
 checkRun "cp ./src/simulator/bin/* ./bin/"
 checkRun "cp -r ./bin $installPath"
 checkRun "cp -r ./test_src $installPath/"
+checkRun "cp -r ./lib $installPath/"
 checkRun "mkdir -p $installPath/log"
 checkRun "mkdir -p $installPath/config"
 checkRun "mkdir -p $installPath/temp"

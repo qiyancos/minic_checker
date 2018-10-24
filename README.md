@@ -1,6 +1,6 @@
 # MiniC Checker
 
-This repository contains the MiniC Checker source code to install MiniC Checker. You may read the [introduction part](#quick) to see the detail setup and code structure for MiniC Checker.
+This repository contains the MiniC Checker source code to install MiniC Checker. You may read the [introduction part](#quick) to see the detail setup and code structure for MiniC Checker. This software is only for linux, and you may change the script for installation if you want to install MiniC Checker in some other linux systems except Ubuntu.
 
 ## Quick Start
 
@@ -60,11 +60,11 @@ We provide multiple independent services for different lab. These services can r
 
 ### MiniC Checker Daemon
 
-We also provide daemon for MiniC Checker Service so that administrator will be notified once the running MiniC Checker Service was accidentally stopped. The notification will be sent to the email address specified for notification through email.
+We also provide daemon for MiniC Checker Service so that administrator will be notified once the running MiniC Checker Service is accidentally stopped. Notification will be sent to the email address specified by administrator through email.
 
 ### Notification Function
 
-We provide this function to help administrator manage the README files, which can be seen by students in their FTP root path. You may use -h option to see how to update the README file.
+We provide this function to help administrator manage the README files, which can be seen by the students in their FTP root path. You may use -h option to see how to update the README file.
 
 ### Service Log
 
@@ -87,6 +87,7 @@ We also build a new format file used for auto-mailing system. The format file is
 
 - bin: Executable binary files, which will be regenerated when running installation.
 - config: Config files for ***heirloom-mailx*** and ***vsftpd***. Mail-format file are also hold here.
+- lib: Lib used for compiling.
 - scripts: Scripts used for MiniC Checker.
 - src: Source file for simulator or mail-format file interpreter.
 - test_src: Test set used for test.
@@ -96,6 +97,7 @@ We also build a new format file used for auto-mailing system. The format file is
 - backup: Folder that will hold the backup for config files.
 - bin: Executable binary files.
 - config: Student list and mail-format file will be copied here.
+- lib: Lib used for compiling.
 - log: Log files and report files will be put here.
 - scripts: Scripts used for MiniC Checker.
 - temp: Temporary files.

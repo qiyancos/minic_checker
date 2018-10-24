@@ -1,0 +1,194 @@
+#! /bin/bash
+installPath="INSTALLPATH"
+testDir=$installPath/test_src/test+
+tempDir=$installPath/temp
+logDir=$installPath/log
+interval=5m #INTERVAL
+ftpRoot="FTPROOT"
+userName="USERNAME"
+timeOut="10" #Time Unit: second
+SID=$RANDOM
+
+checkRun(){
+	$*
+	errCode=$?
+	if [ $errCode != 0 ]
+	then 
+		echo "[`date`][SID] Error occurred while executing command line: \"$*\". Returned with error code ($errCode)"
+		exit
+	fi
+}
+
+timeTransform(){
+	arg=$1
+	wordCount=${#arg}
+	postfix=${arg:$[wordCount - 1]:1}
+	arg=`echo $arg | sed "s/$postfix//g"`
+	case $postfix in
+	m) echo "-mmin -$arg";;
+	h) echo "-mmin -$[arg * 60]";;
+	d) echo "-mtime -$arg";;
+	*) exit;;
+	esac
+}
+
+intervalArg=`timeTransform $interval`
+
+checkLab(){
+	riscv32Dir=$ftpRoot/$stuID/riscv32
+	empty=`checkRun ls $riscv32Dir`
+	changeFlag=`checkRun find $riscv32Dir $intervalArg`
+	#echo "find $riscv32Dir $intervalArg"
+	if [ "${changeFlag}x" != x -a "${empty}x" != x ]
+	then 
+		# Start compiling
+		echo -e "  Check report for lab \"riscv32\":\n" > $logDir/riscv32.rep
+		echo "[`date`][$SID] Found changes with file(s) from $riscv32Dir, start compiling!"
+		checkRun "cd $riscv32Dir"
+		fileList=(`ls`)
+		if [ "`echo ${changeFlag[*]} | grep tar`x" != x -o ${#fileList[*]} = 1 ]
+		then uncompressFlag=1
+		else uncompressFlag=0
+		fi
+		if [ -f ./$stuID.tar -a $uncompressFlag = 1 ]
+		then 
+			checkRun tar -xf ./$stuID.tar
+			if [ -d ./$stuID ]
+			then checkRun cp -r ./$stuID/* ./
+			fi
+		fi
+
+		if [ -f ./makefile -o -f ./Makefile ]
+		then echo -e "cd $riscv32Dir\nmake" | timeout $timeOut su - $userName > $tempDir/compile_riscv32.log 2>&1 
+		elif [ -f ./compile ]
+		then 
+			chmod +x ./compile
+			echo -e "cd $riscv32Dir\n./compile" | timeout $timeOut su - $userName > $tempDir/compile_riscv32.log 2>&1
+		else 
+			mailFormat=NO_COMPILE_METHOD
+			echo "Error: Cann't find an appropriate method to compile your source file!" >> $logDir/riscv32.rep
+			echo "[`date`][$SID] No method found to compile source file while testing student[$stuID]!"
+			return
+		fi
+		errCode=$?
+		if [ $errCode = 124 ]
+		then 
+			mailFormat=COMPILE_TIMEOUT
+			echo "Error: Timelimit exceeded while compiling your source file!" >> $logDir/riscv32.rep
+			echo "[`date`][$SID] Timeout while compiling for student[$stuID]"
+			return
+		elif [ $errCode != 0 ]
+		then 
+			mailFormat=COMPILE_ERROR
+			echo "Error: We have encountered with some problems compiling your source files! You may find more details below or in the file attached with this email!" >> $logDir/riscv32.rep
+			echo "[`date`][$SID] Error(s) occurred with compiling for student[$stuID]"
+			return
+		fi
+		checkRun cp $tempDir/compile_riscv32.log ./
+
+		# Start test
+		if [ ! -f ./riscv32 ]
+		then 
+			mailFormat=NO_BINARY_FILE
+			echo "Error: Can not locate binary file \"riscv32\" for simulation!" >> $logDir/riscv32.rep
+			echo "[`date`][$SID] Cannot locate binary file compiled with compiling method for student[$stuID]"
+			return
+		fi
+		for file in $testDir/*.c
+		do
+			testName=(`basename $file | sed 's/\./ /g'`)
+			#if [ $testName = 25_bubblesort ]
+			#then continue
+			#fi
+			# Use riscv32 compile C file
+			timeout $timeOut ./riscv32 < $file > $tempDir/${testName}_$SID.s 2> $tempDir/compile_riscv32_c2s.log
+			errCode=$?
+			if [ $errCode = 124 ]
+			then 
+				mailFormat=RUN_TIMEOUT
+				echo "Error: Timelimit exceeded while compile MiniC file \"${testName}.c\" to riscv32 with your executable file!" >> $logDir/riscv32.rep
+				echo "[`date`][$SID] Timelimit exceeded while running riscv32 for \"${testName}.c\" with student[$stuID]'s riscv32"
+				return
+			elif [ $errCode != 0 ]
+			then
+				mailFormat=RUNTIME_ERROR
+				#echo -e "\nRunning result may hold some useful information:\n" >> $tempDir/compile_c2e.log
+				#cat $tempDir/${testName}_$SID.e >> $tempDir/compile_c2e.log
+				echo "Error: Runtime error occurred while compiling MiniC file \"${testName}.c\" to riscv32 with your excutable file! You may find more details below or in the file attached with this email." >> $logDir/riscv32.rep
+				echo "[`date`][$SID] Runtime error occurred while running riscv32 for \"${testName}.c\" with student[$stuID]'s riscv32"
+				return
+			fi
+			checkRun cp $tempDir/compile_riscv32_c2s.log ./
+
+			# Compiling assemble language to machine language
+			timeout $installPath/bin/rv32_gcc $tempDir/${testName}_$SID.s $installPath/lib/lib32.s -satic -o $tempDir/${testName}_$SID > $tempDir/compile_riscv32_s2o.log 2>&1
+			errCode=$?
+			if [ $errCode = 124 ]
+			then 
+				mailFormat=ASSEMBLE_COMPILE_TIMEOUT
+				echo "Error: Timelimit exceeded while compiling S file \"${testName}.s\" to ELF file with \"riscv32-unknown-linux-gnu-gcc\"!" >> $logDir/riscv32.rep
+				echo "[`date`][$SID] Timelimit exceeded while compiling assemble language for \"${testName}.c\" with \"riscv32-unknown-linux-gnu-gcc\""
+				return
+			elif
+			then
+				mailFormat=ASSEMBLE_COMPILE_ERROR
+				echo "Error: Error(s) occurred while compiling S file \"${testName}.s\" to ELF file with \"riscv32-unknown-linux-gnu-gcc\"! You may find more details below or in the file attached with this email." >> $logDir/riscv32.rep
+				echo "[`date`][$SID] Runtime error occurred while compiling assemble languange for \"${testName}.c\" with \"riscv32-unknown-linux-gnu-gcc\""
+				return
+			fi
+			checkRun cp $tempDir/compile_riscv32_s2o.log ./
+
+			# Simulating riscv32 elf file
+			if [ -f $testDir/$testName.input ]
+			then timeout $timeOut sudo $installPath/bin/spike pk $tempDir/${testName}_$SID < $testDir/$testName.input > $tempDir/${testName}_$SID.result 2> $tempDir/runtime_riscv32.log
+			else timeout $timeOut sudo $installPath/bin/spike pk $tempDir/${testName}_$SID > $tempDir/${testName}_$SID.result 2> $tempDir/runtime_riscv32.log
+			fi
+			errCode=$?
+			if [ $errCode = 124 ]
+			then
+				mailFormat=SIM_TIMEOUT
+				echo "Error: Timelimit exceeded while simulating \"${testName}.c\" with the riscv32 code generated!" >> $logDir/riscv32.rep
+				echo "[`date`][$SID] Timelimit exceeded while simulating \"${testName}.c\" for student[$stuID]"
+				return
+			else echo $errCode >> $tempDir/${testName}_$SID.result
+			fi
+			checkRun cp $tempDir/runtime_riscv32.log ./
+			
+			# Comparing simulation result
+			diffInfo=`diff $tempDir/${testName}_$SID.result $testDir/$testName.output`
+			if [ "${diffInfo}x" != x ]
+			then 
+				mailFormat=SIM_WRONG_RESULT
+				echo "Error: Simulation result mismatch with \"${testName}.output\"" >> $logDir/riscv32.rep
+				echo "[`date`][$SID] Simulation result mismatch for student[$stuID] with \"${testName}.output\""
+				return
+			fi
+		done
+		echo "Congratulations! You have passed the test for lab-riscv32!" >> $logDir/riscv32.rep
+		mailFormat=TEST_PASS
+	else mailFormat=0
+	fi
+}
+
+if [ ! -d $installPath ]
+then 
+	echo "<Error> Minic Checker root directory not found!"
+	exit
+fi
+
+while [ 1 ]
+do
+	echo "[`date`][$SID] Start checking homeworks"
+	stuList=`checkRun "cat $installPath/config/students.list"`
+	for stuID in $stuList
+	do
+		checkLab
+		if [ $mailFormat != 0 ]
+		then 
+			echo -e "\n  This report was automatically generated by Minic Checker at [`date`]">> $logDir/riscv32.rep
+			echo "[`date`][$SID] Check finished. Get status [$mailFormat] for student [$stuID]! Sending email..."
+			$installPath/scripts/send_mail $stuID@pku.edu.cn -f $installPath/config/minic_checker.mf -t CHECK RISCV32 $mailFormat
+		fi
+	done
+	sleep $interval
+done

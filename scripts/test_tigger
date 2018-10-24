@@ -1,6 +1,6 @@
 #! /bin/bash
 installPath="INSTALLPATH"
-testDir=$installPath/test_src/eeyore
+testDir=$installPath/test_src/test+
 tempDir=$installPath/temp
 logDir=$installPath/log
 interval=5m #INTERVAL
@@ -35,16 +35,16 @@ timeTransform(){
 intervalArg=`timeTransform $interval`
 
 checkLab(){
-	eeyoreDir=$ftpRoot/$stuID/eeyore
-	empty=`checkRun ls $eeyoreDir`
-	changeFlag=`checkRun find $eeyoreDir $intervalArg`
-	#echo "find $eeyoreDir $intervalArg"
+	tiggerDir=$ftpRoot/$stuID/tigger
+	empty=`checkRun ls $tiggerDir`
+	changeFlag=`checkRun find $tiggerDir $intervalArg`
+	#echo "find $tiggerDir $intervalArg"
 	if [ "${changeFlag}x" != x -a "${empty}x" != x ]
 	then 
 		# Start compiling
-		echo -e "  Check report for lab \"eeyore\":\n" > $logDir/eeyore.rep
-		echo "[`date`][$SID] Found changes with file(s) from $eeyoreDir, start compiling!"
-		checkRun "cd $eeyoreDir"
+		echo -e "  Check report for lab \"tigger\":\n" > $logDir/tigger.rep
+		echo "[`date`][$SID] Found changes with file(s) from $tiggerDir, start compiling!"
+		checkRun "cd $tiggerDir"
 		fileList=(`ls`)
 		if [ "`echo ${changeFlag[*]} | grep tar`x" != x -o ${#fileList[*]} = 1 ]
 		then uncompressFlag=1
@@ -59,14 +59,14 @@ checkLab(){
 		fi
 
 		if [ -f ./makefile -o -f ./Makefile ]
-		then echo -e "cd $eeyoreDir\nmake" | timeout $timeOut su - $userName > $tempDir/compile_eeyore.log 2>&1 
+		then echo -e "cd $tiggerDir\nmake" | timeout $timeOut su - $userName > $tempDir/compile_tigger.log 2>&1 
 		elif [ -f ./compile ]
 		then 
 			chmod +x ./compile
-			echo -e "cd $eeyoreDir\n./compile" | timeout $timeOut su - $userName > $tempDir/compile_eeyore.log 2>&1
+			echo -e "cd $tiggerDir\n./compile" | timeout $timeOut su - $userName > $tempDir/compile_tigger.log 2>&1
 		else 
 			mailFormat=NO_COMPILE_METHOD
-			echo "Error: Cann't find an appropriate method to compile your source file!" >> $logDir/eeyore.rep
+			echo "Error: Cann't find an appropriate method to compile your source file!" >> $logDir/tigger.rep
 			echo "[`date`][$SID] No method found to compile source file while testing student[$stuID]!"
 			return
 		fi
@@ -74,23 +74,23 @@ checkLab(){
 		if [ $errCode = 124 ]
 		then 
 			mailFormat=COMPILE_TIMEOUT
-			echo "Error: Timelimit exceeded while compiling your source file!" >> $logDir/eeyore.rep
+			echo "Error: Timelimit exceeded while compiling your source file!" >> $logDir/tigger.rep
 			echo "[`date`][$SID] Timeout while compiling for student[$stuID]"
 			return
 		elif [ $errCode != 0 ]
 		then 
 			mailFormat=COMPILE_ERROR
-			echo "Error: We have encountered with some problems compiling your source files! You may find more details below or in the file attached with this email!" >> $logDir/eeyore.rep
+			echo "Error: We have encountered with some problems compiling your source files! You may find more details below or in the file attached with this email!" >> $logDir/tigger.rep
 			echo "[`date`][$SID] Error(s) occurred with compiling for student[$stuID]"
 			return
 		fi
-		checkRun cp $tempDir/compile_eeyore.log ./
+		checkRun cp $tempDir/compile_tigger.log ./
 
 		# Start test
-		if [ ! -f ./eeyore ]
+		if [ ! -f ./tigger ]
 		then 
 			mailFormat=NO_BINARY_FILE
-			echo "Error: Can not locate binary file \"eeyore\" for simulation!" >> $logDir/eeyore.rep
+			echo "Error: Can not locate binary file \"tigger\" for simulation!" >> $logDir/tigger.rep
 			echo "[`date`][$SID] Cannot locate binary file compiled with compiling method for student[$stuID]"
 			return
 		fi
@@ -100,53 +100,53 @@ checkLab(){
 			#if [ $testName = 25_bubblesort ]
 			#then continue
 			#fi
-			# Use eeyore compile C file
-			timeout $timeOut ./eeyore < $file > $tempDir/${testName}_$SID.e 2> $tempDir/compile_c2e.log
+			# Use tigger compile C file
+			timeout $timeOut ./tigger < $file > $tempDir/${testName}_$SID.t 2> $tempDir/compile_c2t.log
 			errCode=$?
 			if [ $errCode = 124 ]
 			then 
 				mailFormat=RUN_TIMEOUT
-				echo "Error: Timelimit exceeded while compile MiniC file \"${testName}.c\" to eeyore with your executable file!" >> $logDir/eeyore.rep
-				echo "[`date`][$SID] Timelimit exceeded while running eeyore for \"${testName}.c\" with student[$stuID]'s eeyore"
+				echo "Error: Timelimit exceeded while compile MiniC file \"${testName}.c\" to tigger with your executable file!" >> $logDir/tigger.rep
+				echo "[`date`][$SID] Timelimit exceeded while running tigger for \"${testName}.c\" with student[$stuID]'s tigger"
 				return
 			elif [ $errCode != 0 ]
 			then
 				mailFormat=RUNTIME_ERROR
 				#echo -e "\nRunning result may hold some useful information:\n" >> $tempDir/compile_c2e.log
 				#cat $tempDir/${testName}_$SID.e >> $tempDir/compile_c2e.log
-				echo "Error: Runtime error occurred while compiling MiniC file \"${testName}.c\" to eeyore with your excutable file! You may find more details below or in the file attached with this email." >> $logDir/eeyore.rep
-				echo "[`date`][$SID] Runtime error occurred while running eeyore for \"${testName}.c\" with student[$stuID]'s eeyore"
+				echo "Error: Runtime error occurred while compiling MiniC file \"${testName}.c\" to tigger with your excutable file! You may find more details below or in the file attached with this email." >> $logDir/tigger.rep
+				echo "[`date`][$SID] Runtime error occurred while running tigger for \"${testName}.c\" with student[$stuID]'s tigger"
 				return
 			fi
-			checkRun cp $tempDir/compile_c2e.log ./
+			checkRun cp $tempDir/compile_c2t.log ./
 
-			# Simulating eeyore file
+			# Simulating tigger file
 			if [ -f $testDir/$testName.input ]
-			then timeout $timeOut sudo $installPath/bin/Eeyore $tempDir/${testName}_$SID.e < $testDir/$testName.input > $tempDir/${testName}_$SID.result 2> $tempDir/runtime_eeyore.log
-			else timeout $timeOut sudo $installPath/bin/Eeyore $tempDir/${testName}_$SID.e > $tempDir/${testName}_$SID.result 2> $tempDir/runtime_eeyore.log
+			then timeout $timeOut sudo $installPath/bin/Tigger $tempDir/${testName}_$SID.t < $testDir/$testName.input > $tempDir/${testName}_$SID.result 2> $tempDir/runtime_tigger.log
+			else timeout $timeOut sudo $installPath/bin/Tigger $tempDir/${testName}_$SID.t > $tempDir/${testName}_$SID.result 2> $tempDir/runtime_tigger.log
 			fi
 			errCode=$?
 			if [ $errCode = 124 ]
 			then
 				mailFormat=SIM_TIMEOUT
-				echo "Error: Timelimit exceeded while simulating \"${testName}.c\" with the eeyore code generated!" >> $logDir/eeyore.rep
+				echo "Error: Timelimit exceeded while simulating \"${testName}.c\" with the tigger code generated!" >> $logDir/tigger.rep
 				echo "[`date`][$SID] Timelimit exceeded while simulating \"${testName}.c\" for student[$stuID]"
 				return
 			else echo $errCode >> $tempDir/${testName}_$SID.result
 			fi
-			checkRun cp $tempDir/runtime_eeyore.log ./
+			checkRun cp $tempDir/runtime_tigger.log ./
 			
 			# Comparing simulation result
 			diffInfo=`diff $tempDir/${testName}_$SID.result $testDir/$testName.output`
 			if [ "${diffInfo}x" != x ]
 			then 
 				mailFormat=SIM_WRONG_RESULT
-				echo "Error: Simulation result mismatch with \"${testName}.output\"" >> $logDir/eeyore.rep
+				echo "Error: Simulation result mismatch with \"${testName}.output\"" >> $logDir/tigger.rep
 				echo "[`date`][$SID] Simulation result mismatch for student[$stuID] with \"${testName}.output\""
 				return
 			fi
 		done
-		echo "Congratulations! You have passed the test for lab-eeyore!" >> $logDir/eeyore.rep
+		echo "Congratulations! You have passed the test for lab-tigger!" >> $logDir/tigger.rep
 		mailFormat=TEST_PASS
 	else mailFormat=0
 	fi
@@ -167,9 +167,9 @@ do
 		checkLab
 		if [ $mailFormat != 0 ]
 		then 
-			echo -e "\n  This report was automatically generated by Minic Checker at [`date`]">> $logDir/eeyore.rep
+			echo -e "\n  This report was automatically generated by Minic Checker at [`date`]">> $logDir/tigger.rep
 			echo "[`date`][$SID] Check finished. Get status [$mailFormat] for student [$stuID]! Sending email..."
-			$installPath/scripts/send_mail $stuID@pku.edu.cn -f $installPath/config/minic_checker.mf -t CHECK EEYORE $mailFormat
+			$installPath/scripts/send_mail $stuID@pku.edu.cn -f $installPath/config/minic_checker.mf -t CHECK TIGGER $mailFormat
 		fi
 	done
 	sleep $interval
