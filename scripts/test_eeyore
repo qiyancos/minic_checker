@@ -63,7 +63,7 @@ checkLab(){
 		elif [ -f ./compile ]
 		then 
 			chmod +x ./compile
-			echo -e "cd $eeyoreDir\n./compile" | timeout $timeOut su - $userName > $tempDir/compile_eeyore.log 2>&1
+			echo -e "cd $eeyoreDir\nbash ./compile" | timeout $timeOut su - $userName > $tempDir/compile_eeyore.log 2>&1
 		else 
 			mailFormat=NO_COMPILE_METHOD
 			echo "Error: Cann't find an appropriate method to compile your source file!" >> $logDir/eeyore.rep

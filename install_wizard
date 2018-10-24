@@ -5,6 +5,7 @@ installPath=(`cat /etc/passwd | grep "${USER}:" | sed 's/:/ /g'`)
 installPath=/${installPath[4]}/.Minic_Checker
 dateTag=`date | base64`
 cd $root
+root=$PWD
 
 abandon(){
 	$WARN; echo " Install Wizard exiting due to problem listed below:"
@@ -48,13 +49,32 @@ if [ -f ./config/vsftpd -a -f ./config/vsftpd.conf -a -f ./config/s-nail.rc -a -
 then echo "Source file packages is intact, good to go!"
 else abandon "Source file package is not intact!"
 fi
+$RUNMSG ">> Looking for riscv-tool-chain..."
+echo "If you have installed riscv-tool chain, please type in a path to the folder, which holds the binary files. Otherwise ENTER [Y/N] to decide whether we should install and set riscv-tool-chain for you? "
+while [ 1 ]
+do
+	echo -n "[<path to riscv-tool-chain>/Y/N] "
+	read flag
+	if [ ${flag}x = Yx -o ${flag}x = yx -o ${flag}x = x ]
+	then riscvPath="needInstall"; break
+	elif [ -d $flag ]
+	then
+		if [ -f $flag/riscv32-unknown-elf-gcc -a -f $flag/riscv64-unknown-elf-gcc ]
+		then riscvPath=$flag; break
+		else 
+			$Error; echo " Can not locate binary file \"riscv64-unknown-elf-gcc\" or\"riscv32-unknown-elf-gcc\" in $flag!"
+			echo "Please retype the correct path or continue: "
+		fi
+	else abandon "Can not find or install riscv-tool-chain!"
+	fi
+done
 $RUNMSG ">> Local Files Check Passed!"
 
 # Install Software
 $RUNMSG	">> Initiating Environment"
 checkRun "sudo apt-get update"
 checkRun "sudo apt-get upgrade"
-checkRun "sudo apt-get install db-util vsftpd cmake flex bison"
+checkRun "sudo apt-get install git db-util vsftpd cmake flex bison"
 checkRun "sudo apt-get install gcc-5-multilib g++-5-multilib"
 echo -n "Would you like to use the default installation path [$installPath]? [Y/N]"
 read flag
@@ -82,6 +102,29 @@ then checkRun "mkdir $installPath/backup"
 fi
 if [ ! -d $installPath/config ]
 then checkRun "mkdir $installPath/config"
+fi
+if [ $riscvPath = needInstall ]
+then
+	$RUNMSG ">> Start Installing riscv-tool-chain"
+	$WARN; echo " This procedure might take quite a long time, so Be Patient."
+	$RUNMSG ">> Installing pakages needed by riscv-tool-chain"
+	checkRun "sudo apt-get install autoconf automake autotools-dev curl libmpc-dev libmpfr-dev libgmp-dev libusb-1.0-0-dev gawk build-essential bison flex texinfo gperf libtool patchutils bc zlib1g-dev device-tree-compiler pkg-config libexpat-dev"
+	riscvPath=$installPath/riscv/riscv-tool-chain
+	checkRun mkdir -p $riscvPath
+	checkRun cd $installPath/riscv 
+	$RUNMSG ">> Cloning riscv-tools from github.com..."
+	checkRun git clone https://github.com/riscv/riscv-tools.git
+	checkRun cd ./riscv-tools
+	$RUNMSG ">> Updating submodules..."
+	checkRun git submodule update --init --recursive
+	export RISCV=$riscvPath
+	$RUNMSG ">> Building riscv-tool-chain with 32-bit version..."
+	checkRun ./build-rv32ima.sh
+	$RUNMSG ">> Building riscv-tool-chain with 64-bit version..."
+	checkRun ./build.sh
+	riscvPath=$riscvPath/bin
+	cd $root
+	$RUNMSG ">> Riscv-tool-chain has been successfully installed to \"$installPath/riscv/riscv-tool-chain\""
 fi
 $RUNMSG	">> Environment Initiation Successful!"
 
@@ -269,6 +312,9 @@ $RUNMSG ">> Auto-Mail-Sending System Initiation Completed!"
 $RUNMSG ">> Copy Files and Build Simulator Required for Minic Checker"
 # Copy Files
 checkRun "g++ ./src/build_mf.cpp -o ./bin/build_mf"
+checkRun "mkdir $installPath/lib"
+checkRun "$riscvPath/riscv32-unknown-elf-gcc -S ./src/lib.c -o $installPath/lib/lib32.s"
+checkRun "$riscvPath/riscv64-unknown-elf-gcc -S ./src/lib.c -o $installPath/lib/lib64.s"
 $RUNMSG ">> Building Simulator..."
 cd ./src/simulator
 checkRun cmake .
@@ -277,7 +323,7 @@ cd ../..
 checkRun "cp ./src/simulator/bin/* ./bin/"
 checkRun "cp -r ./bin $installPath"
 checkRun "cp -r ./test_src $installPath/"
-checkRun "cp -r ./lib $installPath/"
+#checkRun "cp -r ./lib $installPath/"
 checkRun "mkdir -p $installPath/log"
 checkRun "mkdir -p $installPath/config"
 checkRun "mkdir -p $installPath/temp"
@@ -291,6 +337,7 @@ sedList="/bin/minic_checker $installPath/scripts/* $installPath/config/*"
 sudo sed -i "s%USERNAME%$userName%g" $sedList
 sudo sed -i "s%INSTALLPATH%$installPath%g" $sedList
 sudo sed -i "s%FTPROOT%$userRoot%g" $sedList
+sudo sed -i "s%RISCVPATH%$riscvPath%g" $sedList
 $RUNMSG ">> Files Copy Completed!"
 
 $RUNMSG ">> Setup Email Used for Notification"

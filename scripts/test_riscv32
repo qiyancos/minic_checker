@@ -1,5 +1,6 @@
 #! /bin/bash
 installPath="INSTALLPATH"
+riscvPath="RISCVPATH"
 testDir=$installPath/test_src/test+
 tempDir=$installPath/temp
 logDir=$installPath/log
@@ -63,7 +64,7 @@ checkLab(){
 		elif [ -f ./compile ]
 		then 
 			chmod +x ./compile
-			echo -e "cd $riscv32Dir\n./compile" | timeout $timeOut su - $userName > $tempDir/compile_riscv32.log 2>&1
+			echo -e "cd $riscv32Dir\nbash ./compile" | timeout $timeOut su - $userName > $tempDir/compile_riscv32.log 2>&1
 		else 
 			mailFormat=NO_COMPILE_METHOD
 			echo "Error: Cann't find an appropriate method to compile your source file!" >> $logDir/riscv32.rep
@@ -121,7 +122,7 @@ checkLab(){
 			checkRun cp $tempDir/compile_riscv32_c2s.log ./
 
 			# Compiling assemble language to machine language
-			timeout $installPath/bin/rv32_gcc $tempDir/${testName}_$SID.s $installPath/lib/lib32.s -satic -o $tempDir/${testName}_$SID > $tempDir/compile_riscv32_s2o.log 2>&1
+			timeout $riscvPath/riscv32-unknown-elf-gcc $tempDir/${testName}_$SID.s $installPath/lib/lib32.s -satic -o $tempDir/${testName}_$SID > $tempDir/compile_riscv32_s2o.log 2>&1
 			errCode=$?
 			if [ $errCode = 124 ]
 			then 
@@ -140,8 +141,8 @@ checkLab(){
 
 			# Simulating riscv32 elf file
 			if [ -f $testDir/$testName.input ]
-			then timeout $timeOut sudo $installPath/bin/spike pk $tempDir/${testName}_$SID < $testDir/$testName.input > $tempDir/${testName}_$SID.result 2> $tempDir/runtime_riscv32.log
-			else timeout $timeOut sudo $installPath/bin/spike pk $tempDir/${testName}_$SID > $tempDir/${testName}_$SID.result 2> $tempDir/runtime_riscv32.log
+			then timeout $timeOut sudo $installPath/spike pk $tempDir/${testName}_$SID < $testDir/$testName.input > $tempDir/${testName}_$SID.result 2> $tempDir/runtime_riscv32.log
+			else timeout $timeOut sudo $installPath/spike pk $tempDir/${testName}_$SID > $tempDir/${testName}_$SID.result 2> $tempDir/runtime_riscv32.log
 			fi
 			errCode=$?
 			if [ $errCode = 124 ]
