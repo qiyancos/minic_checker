@@ -115,10 +115,10 @@ readAttachment(){
 	then return
 	fi
 	sed -n $[$1 + 1],$[$2 - 1]p $formatFile > $tempDir/send_mail.tmp
+	fileCount=0
 	if [ -s $tempDir/send_mail.tmp ]
 	then 
 		fileList=`cat $tempDir/send_mail.tmp`
-		fileCount=0
 		for file in $fileList
 		do
 			if [ -f $file ]
@@ -127,13 +127,17 @@ readAttachment(){
 				fileCount=$[fileCount + 1]
 			fi
 		done
-		if [ $fileCount -gt $tarSize ]
-		then 
-			tar -cf $tempDir/send_mail.tar $attachment
-			attachment=$tempDir/send_mail.tar
-		fi
 	fi
-	attachment="$attachment $attachmentAdd"
+	if [ ${attachmentAdd}x != x ]
+	then
+		attachment="$attachment $attachmentAdd"
+		fileCount=$[fileCount + 1]
+	fi
+	if [ $fileCount -gt $tarSize ]
+	then 
+		tar -cJf $tempDir/send_mail.tar $attachment
+		attachment=$tempDir/send_mail.tar
+	fi
 	if [ "${attachment}x" != x ] 
 	then attachment="-a $attachment"
 	fi
