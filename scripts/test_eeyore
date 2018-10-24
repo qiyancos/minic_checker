@@ -90,7 +90,7 @@ checkLab(){
 		if [ ! -f ./eeyore ]
 		then 
 			mailFormat=NO_BINARY_FILE
-			echo "Error: Can not locate binary file \"eeyore\" for simulation!" >> $logDir/eeyore.rep
+			echo "Error: Can not locate binary file \"eeyore\" for compilation!" >> $logDir/eeyore.rep
 			echo "[`date`][$SID] Cannot locate binary file compiled with compiling method for student[$stuID]"
 			return
 		fi

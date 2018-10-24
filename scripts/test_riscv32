@@ -90,7 +90,7 @@ checkLab(){
 		if [ ! -f ./riscv32 ]
 		then 
 			mailFormat=NO_BINARY_FILE
-			echo "Error: Can not locate binary file \"riscv32\" for simulation!" >> $logDir/riscv32.rep
+			echo "Error: Can not locate binary file \"riscv32\" for compilation!" >> $logDir/riscv32.rep
 			echo "[`date`][$SID] Cannot locate binary file compiled with compiling method for student[$stuID]"
 			return
 		fi
