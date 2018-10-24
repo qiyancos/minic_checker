@@ -34,7 +34,7 @@ INSTALLPATH/log/mc_daemon.rep
 
 CHECK{
 	TITLE{
-MiniC Checker Report
+MiniC Check Report
 	}TITLE
 	
 	EEYORE{
