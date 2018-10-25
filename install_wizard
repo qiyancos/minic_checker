@@ -123,7 +123,7 @@ then
 	$WARN; echo " This procedure might take quite a long time, so Be Patient."
 	$RUNMSG ">> Installing pakages needed by riscv-tool-chain"
 	checkRun "sudo apt-get install autoconf automake autotools-dev curl libmpc-dev libmpfr-dev libgmp-dev libusb-1.0-0-dev gawk build-essential bison flex texinfo gperf libtool patchutils bc zlib1g-dev device-tree-compiler pkg-config libexpat-dev"
-	checkRun mkdir -p $riscvPath
+	checkRun mkdir -p $riscvPath/riscv-tool-chain
 	checkRun cd $riscvPath
 	$RUNMSG ">> Cloning riscv-tools from github.com..."
 	if [ -d $riscvPath/riscv-tools ]
@@ -260,7 +260,7 @@ do
 	lineNum=$[lineNum + 1]
 done
 checkRun "sudo db_load -T -t hash -f /etc/vsftpd/vusers.list /etc/vsftpd/vusers.db"
-checkRun "sudo chmod 600 /etc/vsftpd/vusers.db"
+checkRun "sudo chmod 755 /etc/vsftpd/vusers.db"
 checkRun "sudo service vsftpd restart"
 ftpRunning=`checkRun "sudo netstat -antup | grep vsftpd"`
 if [ "${ftpRunning}x" = x ]
