@@ -50,22 +50,37 @@ then echo "Source file packages is intact, good to go!"
 else abandon "Source file package is not intact!"
 fi
 $RUNMSG ">> Looking for riscv-tool-chain..."
-echo "If you have installed riscv-tool chain, please type in a path to the folder, which holds the binary files. Otherwise ENTER [Y/N] to decide whether we should install and set riscv-tool-chain for you? "
 while [ 1 ]
 do
-	echo -n "[<path to riscv-tool-chain>/Y/N] "
+	echo "If you have installed riscv-tool chain, please type in a path to the folder, which holds the binary files or where we should install riscv-tool-chain for you. Otherwise ENTER [N] to quit? "
+	echo -n "[<path to riscv-tool-chain>/N] "
 	read flag
-	if [ ${flag}x = Yx -o ${flag}x = yx -o ${flag}x = x ]
-	then riscvPath="needInstall"; break
-	elif [ -d $flag ]
+	if [ ${flag}x = x ]
+	then 
+		$WARN; echo " Input must not be empty!"
+		continue
+	elif [ ${flag}x = Nx -o ${flag}x = nx ]
+	then abandon "Can not find or install riscv-tool-chain!"
+	elif [ -f $flag/riscv32-unknown-elf-gcc -a -f $flag/riscv64-unknown-elf-gcc ]
+	then 
+		riscvPath=$flag
+		installRiscv=0
+		break
+	elif [ -f $flag/bin/riscv32-unknown-elf-gcc -a -f $flag/bin/riscv64-unknown-elf-gcc ]
 	then
-		if [ -f $flag/riscv32-unknown-elf-gcc -a -f $flag/riscv64-unknown-elf-gcc ]
-		then riscvPath=$flag; break
-		else 
-			$Error; echo " Can not locate binary file \"riscv64-unknown-elf-gcc\" or\"riscv32-unknown-elf-gcc\" in $flag!"
-			echo "Please retype the correct path or continue: "
+		riscvPath=$flag/bin
+		installRiscv=0
+		break;
+	else
+		$WARN; echo " Can not locate binary file \"riscv64-unknown-elf-gcc\" or\"riscv32-unknown-elf-gcc\" in [$flag] or [$flag/bin!]"
+		echo -n "Would you like install riscv-tool-chain to $flag? [Y/N] "
+		read flag
+		if [ ${flag}x = Yx -o ${flag}x = yx -o ${flag}x = x ]
+		then 
+			riscvPath=$flag
+			installRiscv=1
+			break;
 		fi
-	else abandon "Can not find or install riscv-tool-chain!"
 	fi
 done
 $RUNMSG ">> Local Files Check Passed!"
@@ -82,12 +97,11 @@ if [ ${flag}x != yx -a ${flag}x != Yx -a ${flag}x != x ]
 then 
 	while [ 1 ]
 	do 
-		echo "Please ENTER the new FULL path where Minic Checker should be"
-		echo -n "installed:  "
+		echo "Please ENTER the new FULL path where Minic Checker should be installed:  "
 		read installPath
 		echo -n "Install Minic Checker to [$installPath]? [Y/N]"
 		read flag
-		if [ ${flag}x = Yx =o ${flag}x = yx -o ${flag}x = x ]
+		if [ ${flag}x = Yx -o ${flag}x = yx -o ${flag}x = x ]
 		then break
 		fi
 	done 
@@ -103,13 +117,12 @@ fi
 if [ ! -d $installPath/config ]
 then checkRun "mkdir $installPath/config"
 fi
-if [ $riscvPath = needInstall ]
+if [ $installRiscv = 1 ]
 then
 	$RUNMSG ">> Start Installing riscv-tool-chain"
 	$WARN; echo " This procedure might take quite a long time, so Be Patient."
 	$RUNMSG ">> Installing pakages needed by riscv-tool-chain"
 	checkRun "sudo apt-get install autoconf automake autotools-dev curl libmpc-dev libmpfr-dev libgmp-dev libusb-1.0-0-dev gawk build-essential bison flex texinfo gperf libtool patchutils bc zlib1g-dev device-tree-compiler pkg-config libexpat-dev"
-	riscvPath=$installPath/riscv/riscv-tool-chain
 	checkRun mkdir -p $riscvPath
 	checkRun cd $riscvPath
 	$RUNMSG ">> Cloning riscv-tools from github.com..."
@@ -120,12 +133,12 @@ then
 	checkRun cd ./riscv-tools
 	$RUNMSG ">> Updating submodules..."
 	checkRun git submodule update --init --recursive
-	export RISCV=$riscvPath
+	export RISCV=$riscvPath/riscv-tool-chain
 	$RUNMSG ">> Building riscv-tool-chain with 32-bit version..."
 	checkRun ./build-rv32ima.sh
 	$RUNMSG ">> Building riscv-tool-chain with 64-bit version..."
 	checkRun ./build.sh
-	riscvPath=$riscvPath/bin
+	riscvPath=$riscvPath/riscv-tool-chain/bin
 	cd $root
 	$RUNMSG ">> Riscv-tool-chain has been successfully installed to \"$installPath/riscv/riscv-tool-chain\""
 fi
