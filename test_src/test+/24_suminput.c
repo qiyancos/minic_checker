@@ -1,6 +1,7 @@
 //sample:input n numbers,then print the sum of them;
 int getint();
 int putint(int x);
+int putchar(int i);
 int n;
 int a[10];
 int main()
