@@ -42,10 +42,10 @@ $WARNT	"  Please follow the guide to finish Minic Checker installation!  "
 
 # Start File Checking
 $RUNMSG ">> Checking Local Files"
-if [ ! -f $root/students.list ]
+if [ ! -s $root/students.list ]
 then abandon "Virtual-user list [students.list] must be specified!"
 fi
-if [ -f $root/config/vsftpd -a -f $root/config/vsftpd.conf -a -f $root/config/s-nail.rc -a -f $root/config/minic_checker.mf ]
+if [ -s $root/config/vsftpd -a -s $root/config/vsftpd.conf -a -s $root/config/s-nail.rc -a -s $root/config/minic_checker.mf ]
 then echo "Source file packages is intact, good to go!"
 else abandon "Source file package is not intact!"
 fi
