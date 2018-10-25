@@ -116,11 +116,11 @@ checkLab(){
 				mailFormat=RUNTIME_ERROR
 				#echo -e "\nRunning result may hold some useful information:\n" >> $tempDir/compile_c2e.log
 				#cat $tempDir/${testName}_$SID.e >> $tempDir/compile_c2e.log
-				echo "Error: Runtime error occurred while compiling MiniC file \"${testName}.c\" to tigger with your excutable file! Log file won't be attached with this email for the sake of test-set security." >> $logDir/tigger.rep
+				echo "Error: Runtime error occurred while compiling MiniC file \"${testName}.c\" to tigger with your excutable file! You may find more details below or in the file attached with this email." >> $logDir/tigger.rep
 				echo "[`date`][$SID] Runtime error occurred while running tigger for \"${testName}.c\" with student[$stuID]'s tigger"
 				return
 			fi
-			#checkRun cp $tempDir/compile_c2t.log ./
+			checkRun cp $tempDir/compile_c2t.log ./
 
 			# Simulating tigger file
 			if [ -f $testDir/$testName.input ]
