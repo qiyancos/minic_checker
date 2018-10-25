@@ -12,6 +12,8 @@ then
 	echo "    -start,  Start auto-check system for a lab"
 	echo "    -stop,   Stop auto-check system for a lab"
 	echo "    -notify, Update README files for students with the given file"
+	echo "    -tar,    Pack the homeworks for a lab from all students, the compressed" 
+	echo "             file will be saved to current directory."
 	echo "    -u,      Uninstall minic_checker"
 	echo "  [Lab]"
 	echo "    eeyore,  Running auto-check system for lab eeyore"
@@ -188,12 +190,23 @@ notify(){
 	fi
 }
 
+tarAll(){
+	if [ ${1}x != eeyorex -a ${1}x != tiggerx -a ${1}x != riscv32x -a ${1}x != riscv64x ]
+	then
+		$ERROR; echo " No such lab named as [$2]. Use -h for help!"
+		exit
+	fi
+	#TODO
+}
+
 if [ ${1}x = -startx -o ${1}x = -stopx ]
 then checkService $1 $2
 elif [ ${1}x = -ux ]
 then $installPath/scripts/uninstall
 elif [ ${1}x = -notifyx ]
 then notify $2
+elif [ ${1}x = -tarx ]
+then tarAll $2
 else
 	$ERROR; echo " Bad options. Use -h for help!"
 	exit

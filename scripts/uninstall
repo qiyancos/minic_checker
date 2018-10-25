@@ -101,6 +101,7 @@ then
 	checkRun "sudo userdel $userName"
 	$RUNMSG ">> User[$userName] has been removed!"
 	echo "Would like to delete the Root path [$ftpRoot] used for USER[$userName]?"
+	$WARN; echo " This operation will remove all the homeworks in [$ftpRoot]! You may use \"-tar\" option to backup these homeworks before DELETE them."
 	echo -n "[Y/N] "
 	read flag
 	if [ ${flag}x = Yx -o ${flag}x = yx -o ${flag}x = x ]

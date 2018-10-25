@@ -1,0 +1,23 @@
+#! /bin/bash
+set -e
+installPath="INSTALLPATH"
+if [ ${1}x = x -o ${1}x = x ]
+then
+	echo "Usage: ./secureMode [-start/-stop]"
+	exit
+fi
+
+if [ ${1}x = -start ]
+then
+	fileList=`cat $installPath/config/forbidList`
+	for file in $fileList
+	do sudo chmod 700 $file
+	done
+elif [ ${1}x = -stop ]
+then
+	fileList=`cat $installPath/config/forbidList`
+	for file in $fileList
+	do sudo chmod 755 $file
+	done
+else echo "Bad argument. Use -h for help!"
+fi

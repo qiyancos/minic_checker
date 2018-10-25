@@ -58,7 +58,8 @@ checkLab(){
 			then checkRun cp -r ./$stuID/* ./
 			fi
 		fi
-
+		
+		$installPath/scripts/secureMode -start
 		if [ -f ./makefile -o -f ./Makefile ]
 		then echo -e "cd $riscv64Dir\nmake" | timeout $timeOut su - $userName > $tempDir/compile_riscv64.log 2>&1 
 		elif [ -f ./compile ]
@@ -82,9 +83,10 @@ checkLab(){
 		then 
 			mailFormat=COMPILE_ERROR
 			echo "Error: We have encountered with some problems compiling your source files! You may find more details below or in the file attached with this email!" >> $logDir/riscv64.rep
-			echo "[`date`][$SID] Error(s) occurred with compiling for student[$stuID]"
+			echo "[`date`][$SID] Error(s) occurred while compiling for student[$stuID]"
 			return
 		fi
+		$installPath/scripts/secureMode -stop
 		checkRun cp $tempDir/compile_riscv64.log ./
 
 		# Start test
@@ -115,11 +117,11 @@ checkLab(){
 				mailFormat=RUNTIME_ERROR
 				#echo -e "\nRunning result may hold some useful information:\n" >> $tempDir/compile_c2e.log
 				#cat $tempDir/${testName}_$SID.e >> $tempDir/compile_c2e.log
-				echo "Error: Runtime error occurred while compiling MiniC file \"${testName}.c\" to riscv64 with your excutable file! You may find more details below or in the file attached with this email." >> $logDir/riscv64.rep
+				echo "Error: Runtime error occurred while compiling MiniC file \"${testName}.c\" to riscv64 with your excutable file! Log file won't be attached with this email for the sake of test-set security." >> $logDir/riscv64.rep
 				echo "[`date`][$SID] Runtime error occurred while running riscv64 for \"${testName}.c\" with student[$stuID]'s riscv64"
 				return
 			fi
-			checkRun cp $tempDir/compile_riscv64_c2s.log ./
+			#checkRun cp $tempDir/compile_riscv64_c2s.log ./
 
 			# Compiling assemble language to machine language
 			timeout $riscvPath/riscv64-unknown-elf-gcc $tempDir/${testName}_$SID.s $installPath/lib/lib64.s -satic -o $tempDir/${testName}_$SID > $tempDir/compile_riscv64_s2o.log 2>&1
@@ -153,7 +155,14 @@ checkLab(){
 				return
 			else echo $errCode >> $tempDir/${testName}_$SID.result
 			fi
-			checkRun cp $tempDir/runtime.log ./
+			if [ -s $tempDir/runtime_riscv64.log ]
+			then
+				mailFormat=SIM_ERROR
+				echo "Error: Runtime occurred while simulating \"${testName}.c\" with the eeyore code generated!" >> $logDir/riscv64.rep
+				echo "[`date`][$SID] Runtime error occurred while simulating \"${testName}.c\" for student[$stuID]"
+				return
+			fi
+			checkRun cp $tempDir/runtime_riscv64.log ./
 			
 			# Comparing simulation result
 			diffInfo=`diff $tempDir/${testName}_$SID.result $testDir/$testName.output`

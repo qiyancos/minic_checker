@@ -330,6 +330,7 @@ checkRun "mkdir -p $installPath/temp"
 checkRun "cp -r ./scripts $installPath/"
 checkRun "sudo mv $installPath/scripts/minic_checker /bin/"
 checkRun "cp ./config/minic_checker.mf  $installPath/config/"
+checkRun "cp ./config/forbidList $installPath/config/"
 checkRun "sudo chmod 755 /bin/minic_checker"
 checkRun "cp ./students.list $installPath/config/"
 # Modify Files
