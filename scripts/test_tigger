@@ -64,8 +64,7 @@ checkLab(){
 		elif [ -f ./compile ]
 		then 
 			chmod +x ./compile
-			sed -i 's/
-//g' ./compile
+			sed -i 's///g' ./compile
 			echo -e "cd $tiggerDir\nbash ./compile" | timeout $timeOut su - $userName > $tempDir/compile_tigger.log 2>&1
 		else 
 			mailFormat=NO_COMPILE_METHOD

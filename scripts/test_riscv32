@@ -65,7 +65,8 @@ checkLab(){
 		elif [ -f ./compile ]
 		then 
 			chmod +x ./compile
-			sed -i 's///g' ./compile
+			sed -i 's/
+//g' ./compile
 			echo -e "cd $riscv32Dir\nbash ./compile" | timeout $timeOut su - $userName > $tempDir/compile_riscv32.log 2>&1
 		else 
 			mailFormat=NO_COMPILE_METHOD
@@ -91,38 +92,70 @@ checkLab(){
 		checkRun cp $tempDir/compile_riscv32.log ./
 
 		# Start test
-		if [ ! -f ./riscv32 ]
+		if [ ! -f ./riscv32 -o ! -f ./tigger -o ! -f ./eeyore ]
 		then 
 			mailFormat=NO_BINARY_FILE
-			echo "Error: Can not locate binary file \"riscv32\" for compilation!" >> $logDir/riscv32.rep
+			echo "Error: Can not locate all the binary files \"eeyore, tigger, riscv32\" needed for compilation!" >> $logDir/riscv32.rep
 			echo "[`date`][$SID] Cannot locate binary file compiled with compiling method for student[$stuID]"
 			return
 		fi
 		for file in $testDir/*.c
 		do
 			testName=(`basename $file | sed 's/\./ /g'`)
-			#if [ $testName = 25_bubblesort ]
-			#then continue
-			#fi
-			# Use riscv32 compile C file
-			timeout $timeOut ./riscv32 < $file > $tempDir/${testName}_$SID.s 2> $tempDir/compile_riscv32_c2s.log
+			
+			# Use eeyore compile C file
+			timeout $timeOut ./eeyore < $file > $tempDir/${testName}_$SID.e 2> $tempDir/compile_riscv32_c2e.log
 			errCode=$?
 			if [ $errCode = 124 ]
 			then 
 				mailFormat=RUN_TIMEOUT
-				echo "Error: Timelimit exceeded while compile MiniC file \"${testName}.c\" to riscv32 with your executable file!" >> $logDir/riscv32.rep
-				echo "[`date`][$SID] Timelimit exceeded while running riscv32 for \"${testName}.c\" with student[$stuID]'s riscv32"
+				echo "Error: Timelimit exceeded while compile MiniC file \"${testName}.c\" to eeyore with your executable file!" >> $logDir/riscv32.rep
+				echo "[`date`][$SID] Timelimit exceeded while running eeyore for \"${testName}.c\" with student[$stuID]'s eeyore"
 				return
 			elif [ $errCode != 0 ]
 			then
 				mailFormat=RUNTIME_ERROR
-				#echo -e "\nRunning result may hold some useful information:\n" >> $tempDir/compile_c2e.log
-				#cat $tempDir/${testName}_$SID.e >> $tempDir/compile_c2e.log
-				echo "Error: Runtime error occurred while compiling MiniC file \"${testName}.c\" to riscv32 with your excutable file! You may find more details below or in the file attached with this email." >> $logDir/riscv32.rep
-				echo "[`date`][$SID] Runtime error occurred while running riscv32 for \"${testName}.c\" with student[$stuID]'s riscv32"
+				echo "Error: Runtime error occurred while compiling MiniC file \"${testName}.c\" to eeyore with your excutable file! You may find more details below or in the file attached with this email." >> $logDir/riscv32.rep
+				echo "[`date`][$SID] Runtime error occurred while running eeyore for \"${testName}.c\" with student[$stuID]'s eeyore"
 				return
 			fi
-			checkRun cp $tempDir/compile_riscv32_c2s.log ./
+			checkRun cp $tempDir/compile_riscv32_c2e.log ./
+			
+			# Use tigger compile eeyore file
+			timeout $timeOut ./tigger < $tempDir/${testName}_$SID.e > $tempDir/${testName}_$SID.t 2> $tempDir/compile_riscv32_e2t.log
+			errCode=$?
+			if [ $errCode = 124 ]
+			then 
+				mailFormat=RUN_TIMEOUT
+				echo "Error: Timelimit exceeded while compile eeyore file \"${testName}.e\" to tigger with your executable file!" >> $logDir/riscv32.rep
+				echo "[`date`][$SID] Timelimit exceeded while running tigger for \"${testName}.e\" with student[$stuID]'s tigger"
+				return
+			elif [ $errCode != 0 ]
+			then
+				mailFormat=RUNTIME_ERROR
+				echo "Error: Runtime error occurred while compiling eeyore file \"${testName}.e\" to tigger with your excutable file! You may find more details below or in the file attached with this email." >> $logDir/riscv32.rep
+				echo "[`date`][$SID] Runtime error occurred while running tigger for \"${testName}.e\" with student[$stuID]'s tigger"
+				return
+			fi
+			checkRun cp $tempDir/compile_riscv32_e2t.log ./
+
+			# Use riscv32 compile tigger file
+			timeout $timeOut ./riscv32 < $tempDir/${testName}_$SID.t > $tempDir/${testName}_$SID.s 2> $tempDir/compile_riscv32_t2s.log
+			errCode=$?
+			if [ $errCode = 124 ]
+			then 
+				mailFormat=RUN_TIMEOUT
+				echo "Error: Timelimit exceeded while compile tigger file \"${testName}.t\" to assemble language with your executable file!" >> $logDir/riscv32.rep
+				echo "[`date`][$SID] Timelimit exceeded while running riscv32 for \"${testName}.t\" with student[$stuID]'s riscv32"
+				return
+			elif [ $errCode != 0 ]
+			then
+				mailFormat=RUNTIME_ERROR
+				echo "Error: Runtime error occurred while compiling tigger file \"${testName}.t\" to assemble language with your excutable file! You may find more details below or in the file attached with this email." >> $logDir/riscv32.rep
+				echo "[`date`][$SID] Runtime error occurred while running riscv32 for \"${testName}.t\" with student[$stuID]'s riscv32"
+				return
+			fi
+			checkRun cp $tempDir/compile_riscv32_t2s.log ./
 
 			# Compiling assemble language to machine language
 			timeout $riscvPath/riscv32-unknown-elf-gcc $tempDir/${testName}_$SID.s $installPath/lib/lib32.s -satic -o $tempDir/${testName}_$SID > $tempDir/compile_riscv32_s2o.log 2>&1
