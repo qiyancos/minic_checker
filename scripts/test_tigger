@@ -124,8 +124,8 @@ checkLab(){
 
 			# Simulating tigger file
 			if [ -f $testDir/$testName.input ]
-			then timeout $timeOut sudo $installPath/bin/Tigger $tempDir/${testName}_$SID.t < $testDir/$testName.input > $tempDir/${testName}_$SID.result 2> $tempDir/runtime_tigger.log
-			else timeout $timeOut sudo $installPath/bin/Tigger $tempDir/${testName}_$SID.t > $tempDir/${testName}_$SID.result 2> $tempDir/runtime_tigger.log
+			then timeout $timeOut sudo $installPath/bin/Tigger $tempDir/${testName}_$SID.t < $testDir/$testName.input > $tempDir/${testName}_$SID.result 2> $tempDir/simulate_tigger.log
+			else timeout $timeOut sudo $installPath/bin/Tigger $tempDir/${testName}_$SID.t > $tempDir/${testName}_$SID.result 2> $tempDir/simulate_tigger.log
 			fi
 			errCode=$?
 			if [ $errCode = 124 ]
@@ -136,14 +136,14 @@ checkLab(){
 				return
 			else echo $errCode >> $tempDir/${testName}_$SID.result
 			fi
-			if [ -s $tempDir/runtime_tigger.log ]
+			if [ -s $tempDir/simulate_tigger.log ]
 			then
 				mailFormat=SIM_ERROR
 				echo "Error: Runtime occurred while simulating \"${testName}.c\" with the eeyore code generated!" >> $logDir/tigger.rep
 				echo "[`date`][$SID] Runtime error occurred while simulating \"${testName}.c\" for student[$stuID]"
 				return
 			fi
-			checkRun cp $tempDir/runtime_tigger.log ./
+			checkRun cp $tempDir/simulate_tigger.log ./
 			
 			# Comparing simulation result
 			diffInfo=`diff $tempDir/${testName}_$SID.result $testDir/$testName.output`

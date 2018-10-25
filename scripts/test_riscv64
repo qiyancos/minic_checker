@@ -143,8 +143,8 @@ checkLab(){
 
 			# Simulating riscv64 elf file
 			if [ -f $testDir/$testName.input ]
-			then timeout $timeOut sudo $installPath/spike pk $tempDir/${testName}_$SID < $testDir/$testName.input > $tempDir/${testName}_$SID.result 2> $tempDir/runtime_riscv64.log
-			else timeout $timeOut sudo $installPath/spike pk $tempDir/${testName}_$SID > $tempDir/${testName}_$SID.result 2> $tempDir/runtime_riscv64.log
+			then timeout $timeOut sudo $installPath/spike pk $tempDir/${testName}_$SID < $testDir/$testName.input > $tempDir/${testName}_$SID.result 2> $tempDir/simulate_riscv64.log
+			else timeout $timeOut sudo $installPath/spike pk $tempDir/${testName}_$SID > $tempDir/${testName}_$SID.result 2> $tempDir/simulate_riscv64.log
 			fi
 			errCode=$?
 			if [ $errCode = 124 ]
@@ -155,14 +155,14 @@ checkLab(){
 				return
 			else echo $errCode >> $tempDir/${testName}_$SID.result
 			fi
-			if [ -s $tempDir/runtime_riscv64.log ]
+			if [ -s $tempDir/simulate_riscv64.log ]
 			then
 				mailFormat=SIM_ERROR
 				echo "Error: Runtime occurred while simulating \"${testName}.c\" with the eeyore code generated!" >> $logDir/riscv64.rep
 				echo "[`date`][$SID] Runtime error occurred while simulating \"${testName}.c\" for student[$stuID]"
 				return
 			fi
-			checkRun cp $tempDir/runtime_riscv64.log ./
+			checkRun cp $tempDir/simulate_riscv64.log ./
 			
 			# Comparing simulation result
 			diffInfo=`diff $tempDir/${testName}_$SID.result $testDir/$testName.output`
