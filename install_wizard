@@ -2,7 +2,7 @@
 root=`dirname $0`
 #Default Installation Path
 installPath=(`cat /etc/passwd | grep "${USER}:" | sed 's/:/ /g'`) 
-installPath=/${installPath[4]}/.Minic_Checker
+installPath=${installPath[5]}/.Minic_Checker
 dateTag=`date | base64`
 cd $root
 root=$PWD
@@ -26,13 +26,13 @@ checkRun(){
 	fi
 }
 
-checkRun "chmod +x ./scripts/echo_color"
-TITLE="./scripts/echo_color blue bold -t"
-ERROR="./scripts/echo_color red bold -n -t <Error>"
-WARNT="./scripts/echo_color yellow bold -t"
-WARN="./scripts/echo_color yellow bold -n -t <Warning>"
-RUNMSG="./scripts/echo_color blue -t"
-HIGHLIGHT="./scripts/echo_color red -t"
+checkRun "chmod +x $root/scripts/echo_color"
+TITLE="$root/scripts/echo_color blue bold -t"
+ERROR="$root/scripts/echo_color red bold -n -t <Error>"
+WARNT="$root/scripts/echo_color yellow bold -t"
+WARN="$root/scripts/echo_color yellow bold -n -t <Warning>"
+RUNMSG="$root/scripts/echo_color blue -t"
+HIGHLIGHT="$root/scripts/echo_color red -t"
 
 $TITLE	"================================================================="
 $WARNT	"        Author: Rock Lee. All rights reserved by Rock Lee!       "
@@ -42,10 +42,10 @@ $WARNT	"  Please follow the guide to finish Minic Checker installation!  "
 
 # Start File Checking
 $RUNMSG ">> Checking Local Files"
-if [ ! -f ./students.list ]
+if [ ! -f $root/students.list ]
 then abandon "Virtual-user list [students.list] must be specified!"
 fi
-if [ -f ./config/vsftpd -a -f ./config/vsftpd.conf -a -f ./config/s-nail.rc -a -f ./config/minic_checker.mf ]
+if [ -f $root/config/vsftpd -a -f $root/config/vsftpd.conf -a -f $root/config/s-nail.rc -a -f $root/config/minic_checker.mf ]
 then echo "Source file packages is intact, good to go!"
 else abandon "Source file package is not intact!"
 fi
@@ -111,8 +111,11 @@ then
 	checkRun "sudo apt-get install autoconf automake autotools-dev curl libmpc-dev libmpfr-dev libgmp-dev libusb-1.0-0-dev gawk build-essential bison flex texinfo gperf libtool patchutils bc zlib1g-dev device-tree-compiler pkg-config libexpat-dev"
 	riscvPath=$installPath/riscv/riscv-tool-chain
 	checkRun mkdir -p $riscvPath
-	checkRun cd $installPath/riscv 
+	checkRun cd $riscvPath
 	$RUNMSG ">> Cloning riscv-tools from github.com..."
+	if [ -d $riscvPath/riscv-tools ]
+	then checkRun rm -rf $riscvPath/riscv-tools
+	fi
 	checkRun git clone https://github.com/riscv/riscv-tools.git
 	checkRun cd ./riscv-tools
 	$RUNMSG ">> Updating submodules..."
@@ -142,8 +145,8 @@ if [ -f /etc/pam.d/vsftpd ]
 then checkRun "cp /etc/pam.d/vsftpd $installPath/backup/$dateTag/pam_vsftpd"
 fi
 
-checkRun "sudo cp ./config/vsftpd.conf /etc/"
-checkRun "sudo cp ./config/vsftpd /etc/pam.d/vsftpd"
+checkRun "sudo cp $root/config/vsftpd.conf /etc/"
+checkRun "sudo cp $root/config/vsftpd /etc/pam.d/vsftpd"
 
 ftpRunning=`sudo netstat -antup | grep vsftpd`
 if [ "${ftpRunning}x" = x ]
@@ -220,12 +223,12 @@ if [ -d /etc/vsftpd ]
 then checkRun "sudo rm -r /etc/vsftpd"
 fi
 checkRun "sudo mkdir -p /etc/vsftpd/config"
-stuCount=(`checkRun "wc -l ./students.list"`)
+stuCount=(`checkRun "wc -l $root/students.list"`)
 stuCount=${stuCount[0]}
 lineNum=1
 while [ $lineNum -le $stuCount ]
 do
-	stuID=`checkRun "sed -n ${lineNum}p ./students.list"`
+	stuID=`checkRun "sed -n ${lineNum}p $root/students.list"`
 	if [ ${stuID}x != x ]
 	then
 		echo	"Creating folders for student $stuID!"
@@ -237,7 +240,7 @@ do
 		checkRun "mkdir -p -m 777 $stuRoot/tigger"
 		checkRun "mkdir -p -m 777 $stuRoot/riscv32"
 		checkRun "mkdir -p -m 777 $stuRoot/riscv64"
-		checkRun "cp ./config/README_stu $stuRoot/README"
+		checkRun "cp $root/config/README_stu $stuRoot/README"
 		checkRun "chmod 555 $stuRoot/README"
 		sudo bash -c "echo \"local_root=$stuRoot\" > /etc/vsftpd/config/$stuID"
 	fi
@@ -262,7 +265,7 @@ $WARN; echo   " Following processes will change your current heirloom-mailx conf
 if [ -f /etc/s-nail.rc ]
 then checkRun "cp /etc/s-nail.rc $installPath/backup/$dateTag/"
 fi
-checkRun "sudo cp ./config/s-nail.rc /etc/s-nail.rc"
+checkRun "sudo cp $root/config/s-nail.rc /etc/s-nail.rc"
 
 ftpRunning=`checkRun "sudo netstat -antup | grep sendemail"`
 if [ "${ftpRunning}x" = x ]
@@ -311,28 +314,28 @@ $RUNMSG ">> Auto-Mail-Sending System Initiation Completed!"
 
 $RUNMSG ">> Copy Files and Build Simulator Required for Minic Checker"
 # Copy Files
-checkRun "g++ ./src/build_mf.cpp -o ./bin/build_mf"
+checkRun "g++ $root/src/build_mf.cpp -o $root/bin/build_mf"
 checkRun "mkdir $installPath/lib"
-checkRun "$riscvPath/riscv32-unknown-elf-gcc -S ./src/lib.c -o $installPath/lib/lib32.s"
-checkRun "$riscvPath/riscv64-unknown-elf-gcc -S ./src/lib.c -o $installPath/lib/lib64.s"
+checkRun "$riscvPath/riscv32-unknown-elf-gcc -S $root/src/lib.c -o $installPath/lib/lib32.s"
+checkRun "$riscvPath/riscv64-unknown-elf-gcc -S $root/src/lib.c -o $installPath/lib/lib64.s"
 $RUNMSG ">> Building Simulator..."
-cd ./src/simulator
+cd $root/src/simulator
 checkRun cmake .
 checkRun make
-cd ../..
-checkRun "cp ./src/simulator/bin/* ./bin/"
-checkRun "cp -r ./bin $installPath"
-checkRun "cp -r ./test_src $installPath/"
-#checkRun "cp -r ./lib $installPath/"
+cd $root
+checkRun "cp $root/src/simulator/bin/* $root/bin/"
+checkRun "cp -r $root/bin $installPath"
+checkRun "cp -r $root/test_src $installPath/"
+#checkRun "cp -r $root/lib $installPath/"
 checkRun "mkdir -p $installPath/log"
 checkRun "mkdir -p $installPath/config"
 checkRun "mkdir -p $installPath/temp"
-checkRun "cp -r ./scripts $installPath/"
+checkRun "cp -r $root/scripts $installPath/"
 checkRun "sudo mv $installPath/scripts/minic_checker /bin/"
-checkRun "cp ./config/minic_checker.mf  $installPath/config/"
-checkRun "cp ./config/forbidList $installPath/config/"
+checkRun "cp $root/config/minic_checker.mf  $installPath/config/"
+checkRun "cp $root/config/forbidList $installPath/config/"
 checkRun "sudo chmod 755 /bin/minic_checker"
-checkRun "cp ./students.list $installPath/config/"
+checkRun "cp $root/students.list $installPath/config/"
 # Modify Files
 sedList="/bin/minic_checker $installPath/scripts/* $installPath/config/*"
 sudo sed -i "s%USERNAME%$userName%g" $sedList
