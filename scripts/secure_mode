@@ -7,13 +7,13 @@ then
 	exit
 fi
 
-if [ ${1}x = -start ]
+if [ ${1}x = -startx ]
 then
 	fileList=`cat $installPath/config/forbidList`
 	for file in $fileList
 	do sudo chmod 700 $file
 	done
-elif [ ${1}x = -stop ]
+elif [ ${1}x = -stopx ]
 then
 	fileList=`cat $installPath/config/forbidList`
 	for file in $fileList

@@ -1,6 +1,6 @@
 #! /bin/bash
 installPath="INSTALLPATH"
-testDir=$installPath/test_src/test+
+testDir=$installPath/test_src
 tempDir=$installPath/temp
 logDir=$installPath/log
 interval=5m #INTERVAL
@@ -64,7 +64,8 @@ checkLab(){
 		elif [ -f ./compile ]
 		then 
 			chmod +x ./compile
-			sed -i 's///g' ./compile
+			sed -i 's/
+//g' ./compile
 			echo -e "cd $tiggerDir\nbash ./compile" | timeout $timeOut su - $userName > $tempDir/compile_tigger.log 2>&1
 		else 
 			mailFormat=NO_COMPILE_METHOD
@@ -90,38 +91,51 @@ checkLab(){
 		checkRun cp $tempDir/compile_tigger.log ./
 
 		# Start test
-		if [ ! -f ./tigger ]
+		if [ ! -f ./tigger -o ! -f ./eeyore ]
 		then 
 			mailFormat=NO_BINARY_FILE
-			echo "Error: Can not locate binary file \"tigger\" for compilation!" >> $logDir/tigger.rep
+			echo "Error: Can not locate all the binary files \"tigger, eeyore\" needed for compilation!" >> $logDir/tigger.rep
 			echo "[`date`][$SID] Cannot locate binary file compiled with compiling method for student[$stuID]"
 			return
 		fi
 		for file in $testDir/*.c
 		do
 			testName=(`basename $file | sed 's/\./ /g'`)
-			#if [ $testName = 25_bubblesort ]
-			#then continue
-			#fi
-			# Use tigger compile C file
-			timeout $timeOut ./tigger < $file > $tempDir/${testName}_$SID.t 2> $tempDir/compile_c2t.log
+			# Use eeyore compile C file
+			timeout $timeOut ./eeyore < $file > $tempDir/${testName}_$SID.e 2> $tempDir/compile_tigger_c2e.log
 			errCode=$?
 			if [ $errCode = 124 ]
 			then 
 				mailFormat=RUN_TIMEOUT
-				echo "Error: Timelimit exceeded while compile MiniC file \"${testName}.c\" to tigger with your executable file!" >> $logDir/tigger.rep
-				echo "[`date`][$SID] Timelimit exceeded while running tigger for \"${testName}.c\" with student[$stuID]'s tigger"
+				echo "Error: Timelimit exceeded while compile MiniC file \"${testName}.c\" to eeyore with your executable file!" >> $logDir/tigger.rep
+				echo "[`date`][$SID] Timelimit exceeded while running eeyore for \"${testName}.c\" with student[$stuID]'s eeyore"
 				return
 			elif [ $errCode != 0 ]
 			then
 				mailFormat=RUNTIME_ERROR
-				#echo -e "\nRunning result may hold some useful information:\n" >> $tempDir/compile_c2e.log
-				#cat $tempDir/${testName}_$SID.e >> $tempDir/compile_c2e.log
-				echo "Error: Runtime error occurred while compiling MiniC file \"${testName}.c\" to tigger with your excutable file! You may find more details below or in the file attached with this email." >> $logDir/tigger.rep
-				echo "[`date`][$SID] Runtime error occurred while running tigger for \"${testName}.c\" with student[$stuID]'s tigger"
+				echo "Error: Runtime error occurred while compiling MiniC file \"${testName}.c\" to eeyore with your excutable file! You may find more details below or in the file attached with this email." >> $logDir/tigger.rep
+				echo "[`date`][$SID] Runtime error occurred while running eeyore for \"${testName}.c\" with student[$stuID]'s eeyore"
 				return
 			fi
-			checkRun cp $tempDir/compile_c2t.log ./
+			checkRun cp $tempDir/compile_tigger_c2e.log ./
+			
+			# Use tigger compile eeyore file
+			timeout $timeOut ./tigger < $tempDir/${testName}_$SID.e > $tempDir/${testName}_$SID.t 2> $tempDir/compile_tigger_e2t.log
+			errCode=$?
+			if [ $errCode = 124 ]
+			then 
+				mailFormat=RUN_TIMEOUT
+				echo "Error: Timelimit exceeded while compile eeyore file \"${testName}.e\" to tigger with your executable file!" >> $logDir/tigger.rep
+				echo "[`date`][$SID] Timelimit exceeded while running tigger for \"${testName}.e\" with student[$stuID]'s tigger"
+				return
+			elif [ $errCode != 0 ]
+			then
+				mailFormat=RUNTIME_ERROR
+				echo "Error: Runtime error occurred while compiling eeyore file \"${testName}.e\" to tigger with your excutable file! You may find more details below or in the file attached with this email." >> $logDir/tigger.rep
+				echo "[`date`][$SID] Runtime error occurred while running tigger for \"${testName}.e\" with student[$stuID]'s tigger"
+				return
+			fi
+			checkRun cp $tempDir/compile_tigger_e2t.log ./
 
 			# Simulating tigger file
 			if [ -f $testDir/$testName.input ]

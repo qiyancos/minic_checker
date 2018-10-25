@@ -1,7 +1,7 @@
 #! /bin/bash
 installPath="INSTALLPATH"
 riscvPath="RISCVPATH"
-testDir=$installPath/test_src/test+
+testDir=$installPath/test_src
 tempDir=$installPath/temp
 logDir=$installPath/log
 interval=5m #INTERVAL
@@ -129,13 +129,13 @@ checkLab(){
 			errCode=$?
 			if [ $errCode = 124 ]
 			then 
-				mailFormat=ASSEMBLE_COMPILE_TIMEOUT
+				mailFormat=COMPILE_ASSEMBLE_TIMEOUT
 				echo "Error: Timelimit exceeded while compiling S file \"${testName}.s\" to ELF file with \"riscv32-unknown-linux-gnu-gcc\"!" >> $logDir/riscv32.rep
 				echo "[`date`][$SID] Timelimit exceeded while compiling assemble language for \"${testName}.c\" with \"riscv32-unknown-linux-gnu-gcc\""
 				return
 			elif
 			then
-				mailFormat=ASSEMBLE_COMPILE_ERROR
+				mailFormat=COMPILE_ASSEMBLE_ERROR
 				echo "Error: Error(s) occurred while compiling S file \"${testName}.s\" to ELF file with \"riscv32-unknown-linux-gnu-gcc\"! You may find more details below or in the file attached with this email." >> $logDir/riscv32.rep
 				echo "[`date`][$SID] Runtime error occurred while compiling assemble languange for \"${testName}.c\" with \"riscv32-unknown-linux-gnu-gcc\""
 				return

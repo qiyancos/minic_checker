@@ -121,7 +121,7 @@ readAttachment(){
 		fileList=`cat $tempDir/send_mail.tmp`
 		for file in $fileList
 		do
-			if [ -f $file ]
+			if [ -s $file ]
 			then 
 				attachment="$attachment $file"
 				fileCount=$[fileCount + 1]

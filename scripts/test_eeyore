@@ -1,6 +1,6 @@
 #! /bin/bash
 installPath="INSTALLPATH"
-testDir=$installPath/test_src/eeyore
+testDir=$installPath/test_src
 tempDir=$installPath/temp
 logDir=$installPath/log
 interval=5m #INTERVAL
@@ -100,11 +100,9 @@ checkLab(){
 		for file in $testDir/*.c
 		do
 			testName=(`basename $file | sed 's/\./ /g'`)
-			#if [ $testName = 25_bubblesort ]
-			#then continue
-			#fi
+			
 			# Use eeyore compile C file
-			timeout $timeOut ./eeyore < $file > $tempDir/${testName}_$SID.e 2> $tempDir/compile_c2e.log
+			timeout $timeOut ./eeyore < $file > $tempDir/${testName}_$SID.e 2> $tempDir/compile_eeyore_c2e.log
 			errCode=$?
 			if [ $errCode = 124 ]
 			then 
@@ -121,7 +119,7 @@ checkLab(){
 				echo "[`date`][$SID] Runtime error occurred while running eeyore for \"${testName}.c\" with student[$stuID]'s eeyore"
 				return
 			fi
-			checkRun cp $tempDir/compile_c2e.log ./
+			checkRun cp $tempDir/compile_eeyore_c2e.log ./
 
 			# Simulating eeyore file
 			if [ -f $testDir/$testName.input ]
