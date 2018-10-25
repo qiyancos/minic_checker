@@ -72,12 +72,12 @@ do
 		installRiscv=0
 		break;
 	else
+		riscvPath=$flag
 		$WARN; echo " Can not locate binary file \"riscv64-unknown-elf-gcc\" or\"riscv32-unknown-elf-gcc\" in [$flag] or [$flag/bin!]"
 		echo -n "Would you like install riscv-tool-chain to $flag? [Y/N] "
 		read flag
 		if [ ${flag}x = Yx -o ${flag}x = yx -o ${flag}x = x ]
 		then 
-			riscvPath=$flag
 			installRiscv=1
 			break;
 		fi
