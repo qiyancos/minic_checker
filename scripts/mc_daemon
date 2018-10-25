@@ -41,7 +41,7 @@ mainDaemon(){
 		do
 			serviceStatus=(`checkRun sed -n ${line}p $logDir/services.stat`)	
 			checkRun ps -ef > $tempDir/mc_daemon_check2.tmp
-			checkRun cat $tempDir/mc_daemon_check2.tmp | grep ${serviceStatus[0]} > $tempDir/mc_daemon_check.tmp
+			checkRun cat $tempDir/mc_daemon_check2.tmp | grep ${serviceStatus[0]} | sed '/vim/d' > $tempDir/mc_daemon_check.tmp
 			programCount=`checkRun cat $tempDir/mc_daemon_check.tmp | wc -l`
 			realCount=`checkRun cat $tempDir/mc_daemon_check.tmp | grep sudo | wc -l`
 			realCount=$[programCount - realCount]
