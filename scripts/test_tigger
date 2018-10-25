@@ -58,7 +58,7 @@ checkLab(){
 			fi
 		fi
 		
-		$installPath/scripts/secureMode -start
+		$installPath/scripts/secure_mode -start
 		if [ -f ./makefile -o -f ./Makefile ]
 		then echo -e "cd $tiggerDir\nmake" | timeout $timeOut su - $userName > $tempDir/compile_tigger.log 2>&1 
 		elif [ -f ./compile ]
@@ -85,7 +85,7 @@ checkLab(){
 			echo "[`date`][$SID] Error(s) occurred while compiling for student[$stuID]"
 			return
 		fi
-		$installPath/scripts/secureMode -stop
+		$installPath/scripts/secure_mode -stop
 		checkRun cp $tempDir/compile_tigger.log ./
 
 		# Start test

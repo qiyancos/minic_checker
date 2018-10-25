@@ -3,7 +3,7 @@ set -e
 installPath="INSTALLPATH"
 if [ ${1}x = x -o ${1}x = x ]
 then
-	echo "Usage: ./secureMode [-start/-stop]"
+	echo "Usage: ./secure_mode [-start/-stop]"
 	exit
 fi
 
