@@ -215,10 +215,10 @@ if [ "$userRoot" = none ]
 then
 	$RUNMSG ">> Creating new user [$userName]..."
 	if [ ! -d /home/$userName ]
-	then checkRun "mkdir -m 555 /home/$userName"
+	then checkRun "sudo mkdir -m 555 /home/$userName"
 	fi
 	userRoot=/home/$userName
-	checkRun "useradd -d $userRoot -s /bin/bash $userName"
+	checkRun "sudo useradd -d $userRoot -s /bin/bash $userName"
 	echo	"Please set password for [$userName]"
 	errCode=1
 	while [ $errCode != 0 ]
@@ -248,13 +248,13 @@ do
 		sudo bash -c "echo -e "$stuID" >> /etc/vsftpd/vusers.list"
 		sudo bash -c "echo -e "$stuID" >> /etc/vsftpd/vusers.list"
 		stuRoot=$userRoot/$stuID
-		checkRun "mkdir -p -m 555 $stuRoot"
-		checkRun "mkdir -p -m 777 $stuRoot/eeyore"
-		checkRun "mkdir -p -m 777 $stuRoot/tigger"
-		checkRun "mkdir -p -m 777 $stuRoot/riscv32"
-		checkRun "mkdir -p -m 777 $stuRoot/riscv64"
-		checkRun "cp $root/config/README_stu $stuRoot/README"
-		checkRun "chmod 555 $stuRoot/README"
+		checkRun "sudo mkdir -p -m 555 $stuRoot"
+		checkRun "sudo mkdir -p -m 777 $stuRoot/eeyore"
+		checkRun "sudo mkdir -p -m 777 $stuRoot/tigger"
+		checkRun "sudo mkdir -p -m 777 $stuRoot/riscv32"
+		checkRun "sudo mkdir -p -m 777 $stuRoot/riscv64"
+		checkRun "sudo cp $root/config/README_stu $stuRoot/README"
+		checkRun "sudo chmod 555 $stuRoot/README"
 		sudo bash -c "echo \"local_root=$stuRoot\" > /etc/vsftpd/config/$stuID"
 	fi
 	lineNum=$[lineNum + 1]
