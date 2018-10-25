@@ -6,6 +6,7 @@
 /usr/bin/head
 /usr/bin/tail
 /usr/bin/diff
+/usr/bin/touch
 
 /bin/ls
 /bin/rm
@@ -16,6 +17,7 @@
 /bin/chmod
 /bin/grep
 
+/bin/touch
 /bin/tar
 /bin/bunzip2
 /bin/bzcat
