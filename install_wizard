@@ -8,7 +8,7 @@ cd $root
 root=$PWD
 
 abandon(){
-	$WARN; echo " Install Wizard exiting due to problem listed below:"
+	$WARN; echo " Install Wizard exiting due to the problem listed below:"
 	$HIGHLIGHT $*
 	$TITLE  "======================Installation Stopped!======================"
 	exit
