@@ -370,7 +370,7 @@ do
 		if [ $? != 0 ]
 		then abandon "Verification email send failed!"
 		fi
-		$WARN; echo    "An verification email has been sent to $notifyAddr for test! Please makesure that you have recieved it so that you can ENTER the verification code showed in your email (The verification code is case-sensitive and you may ENTER [N/n] to quit):"
+		$WARN; echo    "An email has been sent to $notifyAddr for test and verification! Please makesure that you have recieved it so that you can ENTER the verification code showed in your email (The verification code is case-sensitive and you may ENTER [N/n] to quit):"
 		while [ 1 ]
 		do
 		    read flag
