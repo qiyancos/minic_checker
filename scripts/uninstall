@@ -4,13 +4,12 @@ logDir=$installPath/log
 ftpRoot="FTPROOT"
 userName="USERNAME"
    
-TITLE="$installPath/scripts/echo_color blue bold -t"
-RUNMSG="$installPath/scripts/echo_color blue -t"
-WARNT="$installPath/scripts/echo_color yellow bold -t"
-WARN="$installPath/scripts/echo_color yellow bold -n -t <Warning>"
-ERROR="$installPath/scripts/echo_color red bold -n -t <Error>"
-HIGHLIGHT="$installPath/scripts/echo_color red -t"
-
+TITLE="/bin/echo_color blue bold -t"
+RUNMSG="/bin/echo_color blue -t"
+WARNT="/bin/echo_color yellow bold -t"
+WARN="/bin/echo_color yellow bold -n -t <Warning>"
+ERROR="/bin/echo_color red bold -n -t <Error>"
+HIGHLIGHT="/bin/echo_color red -t"
 
 checkRun(){
 	$*
@@ -22,11 +21,17 @@ checkRun(){
 		echo "Returned with error code ($errCode)"
 		exit
 	fi
-} 
+}
+
+checkRun sudo cp $installPath/scripts/echo_color /bin
 
 doExit(){
+	$RUNMSG ">> Removing Minic Checker..."
+	checkRun "sudo rm /bin/minic_checker"
+	checkRun "sudo rm -rf $installPath"
  	$WARNT "              Thank you for using Minic Checker!                 "
 	$TITLE "==================Uninstallation Complete!======================="
+	checkRun sudo rm /bin/echo_color
 	exit
 }
 
@@ -89,10 +94,6 @@ then
 	fi
 else $WARN; echo " Config files will not be restored!"
 fi
-	
-$RUNMSG ">> Removing Minic Checker..."
-checkRun "sudo rm /bin/minic_checker"
-checkRun "sudo rm -rf $installPath"
 
 echo "Would you like to delete USER[$userName], which is used as Minic Checker FTP host user? [Y/N] "
 read flag
