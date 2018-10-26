@@ -70,6 +70,7 @@ checkLab(){
 			mailFormat=NO_COMPILE_METHOD
 			echo "Error: Cann't find an appropriate method to compile your source file!" >> $logDir/eeyore.rep
 			echo "[`date`][$SID] No method found to compile source file while testing student[$stuID]!"
+			$installPath/scripts/secure_mode -stop
 			return
 		fi
 		errCode=$?
@@ -78,12 +79,14 @@ checkLab(){
 			mailFormat=COMPILE_TIMEOUT
 			echo "Error: Timelimit exceeded while compiling your source file!" >> $logDir/eeyore.rep
 			echo "[`date`][$SID] Timeout while compiling for student[$stuID]"
+			$installPath/scripts/secure_mode -stop
 			return
 		elif [ $errCode != 0 ]
 		then 
 			mailFormat=COMPILE_ERROR
 			echo "Error: We have encountered with some problems compiling your source files! You may find more details below or in the file attached with this email!" >> $logDir/eeyore.rep
 			echo "[`date`][$SID] Error(s) occurred while compiling for student[$stuID]"
+			$installPath/scripts/secure_mode -stop
 			return
 		fi
 		$installPath/scripts/secure_mode -stop

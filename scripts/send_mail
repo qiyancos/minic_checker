@@ -99,7 +99,9 @@ readContent(){
 		content=`cat $tempDir/send_mail.tmp`
 		#echo $content
 		if [ ! -f $content ]
-		then content="< $tempDir/send_mail.tmp"
+		then 
+			cp $tempDir/send_mail.tmp $tempDir/send_mail_content.tmp
+			content="< $tempDir/send_mail_content.tmp"
 		# Move large content to attachment
 		elif [ `cat $content | wc -l` -lt $attachSize ]
 		then content="< $content"

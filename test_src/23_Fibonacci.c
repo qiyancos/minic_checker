@@ -22,6 +22,7 @@ int main()
 	int t;
 	int xx;
 	t=f(n);
-	xx=putint(t);
+	n=putint(t);
+	putchar(10);
 	return t;
 }

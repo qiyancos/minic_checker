@@ -95,7 +95,7 @@ then
 else $WARN; echo " Config files will not be restored!"
 fi
 
-echo "Would you like to delete USER[$userName], which is used as Minic Checker FTP host user? [Y/N] "
+echo -n  "Would you like to delete USER[$userName], which is used as Minic Checker FTP host user? [Y/N] "
 read flag
 if [ ${flag}x = Yx -o ${flag}x = yx -o ${flag}x = x ]
 then 

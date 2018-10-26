@@ -61,12 +61,12 @@ do
 		continue
 	elif [ ${flag}x = Nx -o ${flag}x = nx ]
 	then abandon "Can not find or install riscv-tool-chain!"
-	elif [ -f $flag/riscv32-unknown-elf-gcc -a -f $flag/riscv64-unknown-elf-gcc ]
+	elif [ -f $flag/riscv32-unknown-elf-gcc -a -f $flag/riscv64-unknown-elf-gcc -a -f $flag/riscv64-unknown-elf-run -a -f $flag/riscv32-unknown-elf-run ]
 	then 
 		riscvPath=$flag
 		installRiscv=0
 		break
-	elif [ -f $flag/bin/riscv32-unknown-elf-gcc -a -f $flag/bin/riscv64-unknown-elf-gcc ]
+	elif [ -f $flag/bin/riscv32-unknown-elf-gcc -a -f $flag/bin/riscv64-unknown-elf-gcc -a -f $flag/bin/riscv64-unknown-elf-run -a -f $flag/bin/riscv32-unknown-elf-run ]
 	then
 		riscvPath=$flag/bin
 		installRiscv=0

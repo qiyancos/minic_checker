@@ -65,13 +65,13 @@ checkLab(){
 		elif [ -f ./compile ]
 		then 
 			chmod +x ./compile
-			sed -i 's/
-//g' ./compile
+			sed -i 's///g' ./compile
 			echo -e "cd $riscv64Dir\nbash ./compile" | timeout $timeOut su - $userName > $tempDir/compile_riscv64.log 2>&1
 		else 
 			mailFormat=NO_COMPILE_METHOD
 			echo "Error: Cann't find an appropriate method to compile your source file!" >> $logDir/riscv64.rep
 			echo "[`date`][$SID] No method found to compile source file while testing student[$stuID]!"
+			$installPath/scripts/secure_mode -stop
 			return
 		fi
 		errCode=$?
@@ -80,12 +80,14 @@ checkLab(){
 			mailFormat=COMPILE_TIMEOUT
 			echo "Error: Timelimit exceeded while compiling your source file!" >> $logDir/riscv64.rep
 			echo "[`date`][$SID] Timeout while compiling for student[$stuID]"
+			$installPath/scripts/secure_mode -stop
 			return
 		elif [ $errCode != 0 ]
 		then 
 			mailFormat=COMPILE_ERROR
 			echo "Error: We have encountered with some problems compiling your source files! You may find more details below or in the file attached with this email!" >> $logDir/riscv64.rep
 			echo "[`date`][$SID] Error(s) occurred while compiling for student[$stuID]"
+			$installPath/scripts/secure_mode -stop
 			return
 		fi
 		$installPath/scripts/secure_mode -stop
@@ -158,27 +160,27 @@ checkLab(){
 			checkRun cp $tempDir/compile_riscv64_t2s.log ./
 
 			# Compiling assemble language to machine language
-			timeout $riscvPath/riscv64-unknown-elf-gcc $tempDir/${testName}_$SID.s $installPath/lib/lib64.s -satic -o $tempDir/${testName}_$SID > $tempDir/compile_riscv64_s2o.log 2>&1
+			timeout $timeOut $riscvPath/riscv64-unknown-elf-gcc $tempDir/${testName}_$SID.s $installPath/lib/lib64.s -static -o $tempDir/${testName}_$SID > $tempDir/compile_riscv64_s2o.log 2>&1
 			errCode=$?
 			if [ $errCode = 124 ]
 			then 
 				mailFormat=COMPILE_ASSEMBLE_TIMEOUT
-				echo "Error: Timelimit exceeded while compiling S file \"${testName}.s\" to ELF file with \"riscv64-unknown-linux-gnu-gcc\"!" >> $logDir/riscv64.rep
-				echo "[`date`][$SID] Timelimit exceeded while compiling assemble language for \"${testName}.c\" with \"riscv64-unknown-linux-gnu-gcc\""
+				echo "Error: Timelimit exceeded while compiling S file \"${testName}.s\" to ELF file with \"riscv64-unknown-elf-gcc\"!" >> $logDir/riscv64.rep
+				echo "[`date`][$SID] Timelimit exceeded while compiling assemble language for \"${testName}.c\" with \"riscv64-unknown-elf-gcc\""
 				return
-			elif
+			elif [ $errCode != 0 ]
 			then
 				mailFormat=COMPILE_ASSEMBLE_ERROR
-				echo "Error: Error(s) occurred while compiling S file \"${testName}.s\" to ELF file with \"riscv64-unknown-linux-gnu-gcc\"! You may find more details below or in the file attached with this email." >> $logDir/riscv64.rep
-				echo "[`date`][$SID] Runtime error occurred while compiling assemble languange for \"${testName}.c\" with \"riscv64-unknown-linux-gnu-gcc\""
+				echo "Error: Error(s) occurred while compiling S file \"${testName}.s\" to ELF file with \"riscv64-unknown-elf-gcc\"! You may find more details below or in the file attached with this email." >> $logDir/riscv64.rep
+				echo "[`date`][$SID] Runtime error occurred while compiling assemble languange for \"${testName}.c\" with \"riscv64-unknown-elf-gcc\""
 				return
 			fi
 			checkRun cp $tempDir/compile_riscv64_s2o.log ./
 
 			# Simulating riscv64 elf file
 			if [ -f $testDir/$testName.input ]
-			then timeout $timeOut sudo $installPath/spike pk $tempDir/${testName}_$SID < $testDir/$testName.input > $tempDir/${testName}_$SID.result 2> $tempDir/simulate_riscv64.log
-			else timeout $timeOut sudo $installPath/spike pk $tempDir/${testName}_$SID > $tempDir/${testName}_$SID.result 2> $tempDir/simulate_riscv64.log
+			then timeout $timeOut sudo $riscvPath/riscv64-unknown-elf-run $tempDir/${testName}_$SID < $testDir/$testName.input > $tempDir/${testName}_$SID.result 2> $tempDir/simulate_riscv64.log
+			else timeout $timeOut sudo $riscvPath/riscv64-unknown-elf-run $tempDir/${testName}_$SID > $tempDir/${testName}_$SID.result 2> $tempDir/simulate_riscv64.log
 			fi
 			errCode=$?
 			if [ $errCode = 124 ]

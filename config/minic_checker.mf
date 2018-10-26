@@ -112,7 +112,7 @@ INSTALLPATH/temp/simulate_tigger.log
 
 	RISCV32{
 		CONTENT{
-INSTALLPATH/log/riscv64.rep
+INSTALLPATH/log/riscv32.rep
 		}CONTENT
 	
 		NO_COMPILE_METHOD{
@@ -129,13 +129,16 @@ INSTALLPATH/temp/compile_riscv32.log
 		RUN_TIMEOUT{
 		}RUN_TIMEOUT
 		RUNTIME_ERROR{
+			ATTACH{
+INSTALLPATH/temp/compile_riscv32_c2e.log
+INSTALLPATH/temp/compile_riscv32_e2t.log
+INSTALLPATH/temp/compile_riscv32_t2s.log
+			}ATTACH
 		}RUNTIME_ERROR
 		COMPILE_ASSEMBLE_TIMEOUT{
 		}COMPILE_ASSEMBLE_TIMEOUT
 		COMPILE_ASSEMBLE_ERROR{
 			ATTACH{
-INSTALLPATH/temp/compile_riscv32_c2e.log
-INSTALLPATH/temp/compile_riscv32_e2t.log
 INSTALLPATH/temp/compile_riscv32_s2o.log
 			}ATTACH
 		}COMPILE_ASSEMBLE_ERROR
@@ -171,13 +174,16 @@ INSTALLPATH/temp/compile_riscv64.log
 		RUN_TIMEOUT{
 		}RUN_TIMEOUT
 		RUNTIME_ERROR{
+			ATTACH{
+INSTALLPATH/temp/compile_riscv64_c2e.log
+INSTALLPATH/temp/compile_riscv64_e2t.log
+INSTALLPATH/temp/compile_riscv64_t2s.log
+			}ATTACH
 		}RUNTIME_ERROR
 		COMPILE_ASSEMBLE_TIMEOUT{
 		}COMPILE_ASSEMBLE_TIMEOUT
 		COMPILE_ASSEMBLE_ERROR{
 			ATTACH{
-INSTALLPATH/temp/compile_riscv64_c2e.log
-INSTALLPATH/temp/compile_riscv64_e2t.log
 INSTALLPATH/temp/compile_riscv64_s2o.log
 			}ATTACH
 		}COMPILE_ASSEMBLE_ERROR

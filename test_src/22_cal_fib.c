@@ -25,6 +25,5 @@ int main(){
 	n = getint();
 	int res;
 	res = fib( n );
-	n = putint( res );
 	return res;
 }
