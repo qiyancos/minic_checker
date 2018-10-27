@@ -80,6 +80,7 @@ checkLab(){
 			echo "Error: Timelimit exceeded while compiling your source file!" >> $logDir/tigger.rep
 			echo "[`date`][$SID] Timeout while compiling for student[$stuID]"
 			$installPath/scripts/secure_mode -stop
+			checkRun cp $tempDir/compile_tigger.log ./
 			return
 		elif [ $errCode != 0 ]
 		then 
@@ -87,6 +88,7 @@ checkLab(){
 			echo "Error: We have encountered with some problems compiling your source files! You may find more details below or in the file attached with this email!" >> $logDir/tigger.rep
 			echo "[`date`][$SID] Error(s) occurred while compiling for student[$stuID]"
 			$installPath/scripts/secure_mode -stop
+			checkRun cp $tempDir/compile_tigger.log ./
 			return
 		fi
 		$installPath/scripts/secure_mode -stop
@@ -111,12 +113,14 @@ checkLab(){
 				mailFormat=RUN_TIMEOUT
 				echo "Error: Timelimit exceeded while compile MiniC file \"${testName}.c\" to eeyore with your executable file!" >> $logDir/tigger.rep
 				echo "[`date`][$SID] Timelimit exceeded while running eeyore for \"${testName}.c\" with student[$stuID]'s eeyore"
+				checkRun cp $tempDir/compile_tigger_c2e.log ./
 				return
 			elif [ $errCode != 0 ]
 			then
 				mailFormat=RUNTIME_ERROR
 				echo "Error: Runtime error occurred while compiling MiniC file \"${testName}.c\" to eeyore with your excutable file! You may find more details below or in the file attached with this email." >> $logDir/tigger.rep
 				echo "[`date`][$SID] Runtime error occurred while running eeyore for \"${testName}.c\" with student[$stuID]'s eeyore"
+				checkRun cp $tempDir/compile_tigger_c2e.log ./
 				return
 			fi
 			checkRun cp $tempDir/compile_tigger_c2e.log ./
@@ -129,12 +133,14 @@ checkLab(){
 				mailFormat=RUN_TIMEOUT
 				echo "Error: Timelimit exceeded while compile eeyore file \"${testName}.e\" to tigger with your executable file!" >> $logDir/tigger.rep
 				echo "[`date`][$SID] Timelimit exceeded while running tigger for \"${testName}.e\" with student[$stuID]'s tigger"
+				checkRun cp $tempDir/compile_tigger_e2t.log ./
 				return
 			elif [ $errCode != 0 ]
 			then
 				mailFormat=RUNTIME_ERROR
 				echo "Error: Runtime error occurred while compiling eeyore file \"${testName}.e\" to tigger with your excutable file! You may find more details below or in the file attached with this email." >> $logDir/tigger.rep
 				echo "[`date`][$SID] Runtime error occurred while running tigger for \"${testName}.e\" with student[$stuID]'s tigger"
+				checkRun cp $tempDir/compile_tigger_e2t.log ./
 				return
 			fi
 			checkRun cp $tempDir/compile_tigger_e2t.log ./
@@ -150,6 +156,7 @@ checkLab(){
 				mailFormat=SIM_TIMEOUT
 				echo "Error: Timelimit exceeded while simulating \"${testName}.c\" with the tigger code generated!" >> $logDir/tigger.rep
 				echo "[`date`][$SID] Timelimit exceeded while simulating \"${testName}.c\" for student[$stuID]"
+				checkRun cp $tempDir/simulate_tigger.log ./
 				return
 			else echo $errCode >> $tempDir/${testName}_$SID.result
 			fi
@@ -158,6 +165,7 @@ checkLab(){
 				mailFormat=SIM_ERROR
 				echo "Error: Runtime occurred while simulating \"${testName}.c\" with the eeyore code generated!" >> $logDir/tigger.rep
 				echo "[`date`][$SID] Runtime error occurred while simulating \"${testName}.c\" for student[$stuID]"
+				checkRun cp $tempDir/simulate_tigger.log ./
 				return
 			fi
 			checkRun cp $tempDir/simulate_tigger.log ./

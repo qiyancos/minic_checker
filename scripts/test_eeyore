@@ -80,6 +80,7 @@ checkLab(){
 			echo "Error: Timelimit exceeded while compiling your source file!" >> $logDir/eeyore.rep
 			echo "[`date`][$SID] Timeout while compiling for student[$stuID]"
 			$installPath/scripts/secure_mode -stop
+			checkRun cp $tempDir/compile_eeyore.log ./
 			return
 		elif [ $errCode != 0 ]
 		then 
@@ -87,6 +88,7 @@ checkLab(){
 			echo "Error: We have encountered with some problems compiling your source files! You may find more details below or in the file attached with this email!" >> $logDir/eeyore.rep
 			echo "[`date`][$SID] Error(s) occurred while compiling for student[$stuID]"
 			$installPath/scripts/secure_mode -stop
+			checkRun cp $tempDir/compile_eeyore.log ./
 			return
 		fi
 		$installPath/scripts/secure_mode -stop
@@ -112,6 +114,7 @@ checkLab(){
 				mailFormat=RUN_TIMEOUT
 				echo "Error: Timelimit exceeded while compile MiniC file \"${testName}.c\" to eeyore with your executable file!" >> $logDir/eeyore.rep
 				echo "[`date`][$SID] Timelimit exceeded while running eeyore for \"${testName}.c\" with student[$stuID]'s eeyore"
+				checkRun cp $tempDir/compile_eeyore_c2e.log ./
 				return
 			elif [ $errCode != 0 ]
 			then
@@ -120,6 +123,7 @@ checkLab(){
 				#cat $tempDir/${testName}_$SID.e >> $tempDir/compile_c2e.log
 				echo "Error: Runtime error occurred while compiling MiniC file \"${testName}.c\" to eeyore with your excutable file! You may find more details below or in the file attached with this email." >> $logDir/eeyore.rep
 				echo "[`date`][$SID] Runtime error occurred while running eeyore for \"${testName}.c\" with student[$stuID]'s eeyore"
+				checkRun cp $tempDir/compile_eeyore_c2e.log ./
 				return
 			fi
 			checkRun cp $tempDir/compile_eeyore_c2e.log ./
@@ -135,6 +139,7 @@ checkLab(){
 				mailFormat=SIM_TIMEOUT
 				echo "Error: Timelimit exceeded while simulating \"${testName}.c\" with the eeyore code generated!" >> $logDir/eeyore.rep
 				echo "[`date`][$SID] Timelimit exceeded while simulating \"${testName}.c\" for student[$stuID]"
+				checkRun cp $tempDir/simulate_eeyore.log ./
 				return
 			else echo $errCode >> $tempDir/${testName}_$SID.result
 			fi
@@ -143,6 +148,7 @@ checkLab(){
 				mailFormat=SIM_ERROR
 				echo "Error: Runtime occurred while simulating \"${testName}.c\" with the eeyore code generated!" >> $logDir/eeyore.rep
 				echo "[`date`][$SID] Runtime error occurred while simulating \"${testName}.c\" for student[$stuID]"
+				checkRun cp $tempDir/simulate_eeyore.log ./
 				return
 			fi
 			checkRun cp $tempDir/simulate_eeyore.log ./
