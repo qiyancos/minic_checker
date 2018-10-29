@@ -64,6 +64,8 @@ int main()
 	a25=a24+1;
 	int t;
 	t=putint(a25);
-	putchar(10);
+	int newline;
+	newline = 10;
+	t=putchar(newline);
 	return a25;
 }

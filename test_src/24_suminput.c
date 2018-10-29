@@ -19,6 +19,8 @@ int main()
 	i=i+1;
 	} 
 	n=putint(s);
-	putchar(10);
+	int newline;
+	newline = 10;
+	n=putchar(newline);
 	return s;
 }

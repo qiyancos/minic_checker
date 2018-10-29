@@ -23,6 +23,8 @@ int main()
 	int xx;
 	t=f(n);
 	n=putint(t);
-	putchar(10);
+	int newline;
+	newline = 10;
+	n=putchar(newline);
 	return t;
 }
