@@ -53,6 +53,14 @@ checkLab(){
 		if [ -f ./$stuID.tar -a $uncompressFlag = 1 ]
 		then 
 			echo -e "cd $tiggerDir\ntar -xf ./$stuID.tar" | su - $userName
+			errCode=$?
+			if [ $errCode != 0 ]
+			then
+				mailFormat=UNCOMPRESS_ERROR
+				echo "Error: Error(s) occurred while uncompressing your tar file!" >> $logDir/tigger.rep
+				echo "[`date`][$SID] Error(s) occurred while uncompressing for student[$stuID]!"
+				return
+			fi
 			if [ -d ./$stuID ]
 			then echo -e "cd $tiggerDir\ncp -r ./$stuID/* ./" | su - $userName
 			fi
@@ -64,7 +72,8 @@ checkLab(){
 		elif [ -f ./compile ]
 		then 
 			chmod +x ./compile
-			sed -i 's///g' ./compile
+			sed -i 's/
+//g' ./compile
 			echo -e "cd $tiggerDir\nbash ./compile" | timeout $timeOut su - $userName > $tempDir/compile_tigger.log 2>&1
 		else 
 			mailFormat=NO_COMPILE_METHOD
@@ -158,16 +167,17 @@ checkLab(){
 				echo "[`date`][$SID] Timelimit exceeded while simulating \"${testName}.c\" for student[$stuID]"
 				checkRun cp $tempDir/simulate_tigger.log ./
 				return
-			else echo $errCode >> $tempDir/${testName}_$SID.result
 			fi
-			if [ -s $tempDir/simulate_tigger.log ]
+			if [ "`grep "Error\|error\|fault" $tempDir/${testName}_$SID.result`x" != x -o -s $tempDir/simulate_tigger.log ]
 			then
 				mailFormat=SIM_ERROR
 				echo "Error: Runtime occurred while simulating \"${testName}.c\" with the eeyore code generated!" >> $logDir/tigger.rep
 				echo "[`date`][$SID] Runtime error occurred while simulating \"${testName}.c\" for student[$stuID]"
+				cat $tempDir/${testName}_$SID.result >> $tempDir/simulate_tigger.log
 				checkRun cp $tempDir/simulate_tigger.log ./
 				return
 			fi
+			echo $errCode >> $tempDir/${testName}_$SID.result
 			checkRun cp $tempDir/simulate_tigger.log ./
 			
 			# Comparing simulation result

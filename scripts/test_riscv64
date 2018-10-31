@@ -54,6 +54,14 @@ checkLab(){
 		if [ -f ./$stuID.tar -a $uncompressFlag = 1 ]
 		then 
 			echo -e "cd $riscv64Dir\ntar -xf ./$stuID.tar" | su - $userName
+			errCode=$?
+			if [ $errCode != 0 ]
+			then
+				mailFormat=UNCOMPRESS_ERROR
+				echo "Error: Error(s) occurred while uncompressing your tar file!" >> $logDir/riscv64.rep
+				echo "[`date`][$SID] Error(s) occurred while uncompressing for student[$stuID]!"
+				return
+			fi
 			if [ -d ./$stuID ]
 			then echo -e "cd $riscv64Dir\ncp -r ./$stuID/* ./" | su - $userName
 			fi
@@ -65,7 +73,8 @@ checkLab(){
 		elif [ -f ./compile ]
 		then 
 			chmod +x ./compile
-			sed -i 's///g' ./compile
+			sed -i 's/
+//g' ./compile
 			echo -e "cd $riscv64Dir\nbash ./compile" | timeout $timeOut su - $userName > $tempDir/compile_riscv64.log 2>&1
 		else 
 			mailFormat=NO_COMPILE_METHOD
@@ -200,7 +209,6 @@ checkLab(){
 				echo "[`date`][$SID] Timelimit exceeded while simulating \"${testName}.c\" for student[$stuID]"
 				checkRun cp $tempDir/simulate_riscv64.log ./
 				return
-			else echo $errCode >> $tempDir/${testName}_$SID.result
 			fi
 			if [ -s $tempDir/simulate_riscv64.log ]
 			then
@@ -210,6 +218,7 @@ checkLab(){
 				checkRun cp $tempDir/simulate_riscv64.log ./
 				return
 			fi
+			echo $errCode >> $tempDir/${testName}_$SID.result
 			checkRun cp $tempDir/simulate_riscv64.log ./
 			
 			# Comparing simulation result
