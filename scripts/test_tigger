@@ -52,9 +52,9 @@ checkLab(){
 		fi
 		if [ -f ./$stuID.tar -a $uncompressFlag = 1 ]
 		then 
-			checkRun tar -xf ./$stuID.tar
+			echo -e "cd $tiggerDir\ntar -xf ./$stuID.tar" | su - $userName
 			if [ -d ./$stuID ]
-			then checkRun cp -r ./$stuID/* ./
+			then echo -e "cd $tiggerDir\ncp -r ./$stuID/* ./" | su - $userName
 			fi
 		fi
 		
