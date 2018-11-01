@@ -1,6 +1,6 @@
 # MiniC Checker
 
-This repository contains the MiniC Checker source code to install MiniC Checker. You may read the [introduction part](#quick) to see the detail setup and code structure for MiniC Checker. This software is only for linux, and you may change the script for installation if you want to install MiniC Checker in some other linux systems except Ubuntu.
+This repository contains the MiniC Checker source code to install MiniC Checker. You may read the [introduction part](#quick) to see the detail of setup and code structure for MiniC Checker. This software is only for linux, and you may change the script for installation if you want to install MiniC Checker in some other linux systems except Ubuntu.
 
 ## Quick Start
 
