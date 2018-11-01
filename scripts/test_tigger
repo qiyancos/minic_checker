@@ -104,56 +104,81 @@ checkLab(){
 		checkRun cp $tempDir/compile_tigger.log ./
 
 		# Start test
-		if [ ! -f ./tigger -o ! -f ./eeyore ]
+		if [ ! -f ./tiggerC ] && [ ! -f ./tigger -o ! -f ./eeyore ]
 		then 
 			mailFormat=NO_BINARY_FILE
-			echo "Error: Can not locate all the binary files \"tigger, eeyore\" needed for compilation!" >> $logDir/tigger.rep
+			echo "Error: Can not locate all the binary files \"tigger, eeyore\" or \"tiggerC\" needed for compilation!" >> $logDir/tigger.rep
 			echo "[`date`][$SID] Cannot locate binary file compiled with compiling method for student[$stuID]"
 			return
 		fi
+			
 		for file in $testDir/*.c
 		do
 			testName=(`basename $file | sed 's/\./ /g'`)
-			# Use eeyore compile C file
-			timeout $timeOut ./eeyore < $file > $tempDir/${testName}_$SID.e 2> $tempDir/compile_tigger_c2e.log
-			errCode=$?
-			if [ $errCode = 124 ]
-			then 
-				mailFormat=RUN_TIMEOUT
-				echo "Error: Timelimit exceeded while compile MiniC file \"${testName}.c\" to eeyore with your executable file!" >> $logDir/tigger.rep
-				echo "[`date`][$SID] Timelimit exceeded while running eeyore for \"${testName}.c\" with student[$stuID]'s eeyore"
-				checkRun cp $tempDir/compile_tigger_c2e.log ./
-				return
-			elif [ $errCode != 0 ]
+			rm $tempDir/compile_tigger_*.log 
+			if [ -f ./tiggerC ]
 			then
-				mailFormat=RUNTIME_ERROR
-				echo "Error: Runtime error occurred while compiling MiniC file \"${testName}.c\" to eeyore with your excutable file! You may find more details below or in the file attached with this email." >> $logDir/tigger.rep
-				echo "[`date`][$SID] Runtime error occurred while running eeyore for \"${testName}.c\" with student[$stuID]'s eeyore"
+				# Use tiggerC compile C file
+				timeout $timeOut ./tiggerC < $file > $tempDir/${testName}_$SID.t 2> $tempDir/compile_tigger_c2t.log
+				errCode=$?
+				if [ $errCode = 124 ]
+				then 
+					mailFormat=RUN_TIMEOUT
+					echo "Error: Timelimit exceeded while compile MiniC file \"${testName}.c\" to tigger with your executable file!" >> $logDir/tigger.rep
+					echo "[`date`][$SID] Timelimit exceeded while running tiggerC for \"${testName}.c\" with student[$stuID]'s tiggerC"
+					checkRun cp $tempDir/compile_tigger_c2t.log ./
+					return
+				elif [ $errCode != 0 ]
+				then
+					mailFormat=RUNTIME_ERROR
+					echo "Error: Runtime error occurred while compiling MiniC file \"${testName}.c\" to tigger with your excutable file! You may find more details below or in the file attached with this email." >> $logDir/tigger.rep
+					echo "[`date`][$SID] Runtime error occurred while running tiggerC for \"${testName}.c\" with student[$stuID]'s tiggerC"
+					checkRun cp $tempDir/compile_tigger_c2t.log ./
+					return
+				fi
+				checkRun cp $tempDir/compile_tigger_c2t.log ./
+			else
+				# Use eeyore compile C file
+				timeout $timeOut ./eeyore < $file > $tempDir/${testName}_$SID.e 2> $tempDir/compile_tigger_c2e.log
+				errCode=$?
+				if [ $errCode = 124 ]
+				then 
+					mailFormat=RUN_TIMEOUT
+					echo "Error: Timelimit exceeded while compile MiniC file \"${testName}.c\" to eeyore with your executable file!" >> $logDir/tigger.rep
+					echo "[`date`][$SID] Timelimit exceeded while running eeyore for \"${testName}.c\" with student[$stuID]'s eeyore"
+					checkRun cp $tempDir/compile_tigger_c2e.log ./
+					return
+				elif [ $errCode != 0 ]
+				then
+					mailFormat=RUNTIME_ERROR
+					echo "Error: Runtime error occurred while compiling MiniC file \"${testName}.c\" to eeyore with your excutable file! You may find more details below or in the file attached with this email." >> $logDir/tigger.rep
+					echo "[`date`][$SID] Runtime error occurred while running eeyore for \"${testName}.c\" with student[$stuID]'s eeyore"
+					checkRun cp $tempDir/compile_tigger_c2e.log ./
+					return
+				fi
 				checkRun cp $tempDir/compile_tigger_c2e.log ./
-				return
-			fi
-			checkRun cp $tempDir/compile_tigger_c2e.log ./
 			
-			# Use tigger compile eeyore file
-			timeout $timeOut ./tigger < $tempDir/${testName}_$SID.e > $tempDir/${testName}_$SID.t 2> $tempDir/compile_tigger_e2t.log
-			errCode=$?
-			if [ $errCode = 124 ]
-			then 
-				mailFormat=RUN_TIMEOUT
-				echo "Error: Timelimit exceeded while compile eeyore file \"${testName}.e\" to tigger with your executable file!" >> $logDir/tigger.rep
-				echo "[`date`][$SID] Timelimit exceeded while running tigger for \"${testName}.e\" with student[$stuID]'s tigger"
+				# Use tigger compile eeyore file
+				timeout $timeOut ./tigger < $tempDir/${testName}_$SID.e > $tempDir/${testName}_$SID.t 2> $tempDir/compile_tigger_e2t.log
+				errCode=$?
+				if [ $errCode = 124 ]
+				then 
+					mailFormat=RUN_TIMEOUT
+					echo "Error: Timelimit exceeded while compile eeyore file \"${testName}.e\" to tigger with your executable file!" >> $logDir/tigger.rep
+					echo "[`date`][$SID] Timelimit exceeded while running tigger for \"${testName}.e\" with student[$stuID]'s tigger"
+					checkRun cp $tempDir/compile_tigger_e2t.log ./
+					return
+				elif [ $errCode != 0 ]
+				then
+					mailFormat=RUNTIME_ERROR
+					echo "Error: Runtime error occurred while compiling eeyore file \"${testName}.e\" to tigger with your excutable file! You may find more details below or in the file attached with this email." >> $logDir/tigger.rep
+					echo "[`date`][$SID] Runtime error occurred while running tigger for \"${testName}.e\" with student[$stuID]'s tigger"
+					checkRun cp $tempDir/compile_tigger_e2t.log ./
+					return
+				fi
 				checkRun cp $tempDir/compile_tigger_e2t.log ./
-				return
-			elif [ $errCode != 0 ]
-			then
-				mailFormat=RUNTIME_ERROR
-				echo "Error: Runtime error occurred while compiling eeyore file \"${testName}.e\" to tigger with your excutable file! You may find more details below or in the file attached with this email." >> $logDir/tigger.rep
-				echo "[`date`][$SID] Runtime error occurred while running tigger for \"${testName}.e\" with student[$stuID]'s tigger"
-				checkRun cp $tempDir/compile_tigger_e2t.log ./
-				return
 			fi
-			checkRun cp $tempDir/compile_tigger_e2t.log ./
-
+			
 			# Simulating tigger file
 			if [ -f $testDir/$testName.input ]
 			then timeout $timeOut sudo $installPath/bin/Tigger $tempDir/${testName}_$SID.t < $testDir/$testName.input > $tempDir/${testName}_$SID.result 2> $tempDir/simulate_tigger.log

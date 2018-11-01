@@ -105,77 +105,100 @@ checkLab(){
 		checkRun cp $tempDir/compile_riscv64.log ./
 
 		# Start test
-		if [ ! -f ./riscv64 -o ! -f ./tigger -o ! -f ./eeyore ]
+		if [ ! -f ./riscv64C ] && [ ! -f ./riscv64 -o ! -f ./tigger -o ! -f ./eeyore ]
 		then 
 			mailFormat=NO_BINARY_FILE
-			echo "Error: Can not locate all the binary files \"eeyore, tigger, riscv64\" needed for compilation!" >> $logDir/riscv64.rep
+			echo "Error: Can not locate all the binary files \"eeyore, tigger, riscv64\" or \"riscv64C\" needed for compilation!" >> $logDir/riscv64.rep
 			echo "[`date`][$SID] Cannot locate binary file compiled with compiling method for student[$stuID]"
 			return
 		fi
 		for file in $testDir/*.c
 		do
 			testName=(`basename $file | sed 's/\./ /g'`)
-			
-			# Use eeyore compile C file
-			timeout $timeOut ./eeyore < $file > $tempDir/${testName}_$SID.e 2> $tempDir/compile_riscv64_c2e.log
-			errCode=$?
-			if [ $errCode = 124 ]
-			then 
-				mailFormat=RUN_TIMEOUT
-				echo "Error: Timelimit exceeded while compile MiniC file \"${testName}.c\" to eeyore with your executable file!" >> $logDir/riscv64.rep
-				echo "[`date`][$SID] Timelimit exceeded while running eeyore for \"${testName}.c\" with student[$stuID]'s eeyore"
+			rm $tempDir/compile_riscv64_*.log
+			if [ -f ./riscv64C ]
+			then
+				# Use riscv64C compile C file
+				timeout $timeOut ./riscv64C < $file > $tempDir/${testName}_$SID.s 2> $tempDir/compile_riscv64_c2s.log
+				errCode=$?
+				if [ $errCode = 124 ]
+				then 
+					mailFormat=RUN_TIMEOUT
+					echo "Error: Timelimit exceeded while compile MiniC file \"${testName}.c\" to assemble language with your executable file!" >> $logDir/riscv64.rep
+					echo "[`date`][$SID] Timelimit exceeded while running riscv64C for \"${testName}.c\" with student[$stuID]'s riscv64C"
+					checkRun cp $tempDir/compile_riscv64_c2s.log ./
+					return
+				elif [ $errCode != 0 ]
+				then
+					mailFormat=RUNTIME_ERROR
+					echo "Error: Runtime error occurred while compiling MiniC file \"${testName}.c\" to assemble language with your excutable file! You may find more details below or in the file attached with this email." >> $logDir/riscv64.rep
+					echo "[`date`][$SID] Runtime error occurred while running riscv64C for \"${testName}.c\" with student[$stuID]'s riscv64C"
+					checkRun cp $tempDir/compile_riscv64_c2s.log ./
+					return
+				fi
+				checkRun cp $tempDir/compile_riscv64_c2s.log ./
+			else
+				# Use eeyore compile C file
+				timeout $timeOut ./eeyore < $file > $tempDir/${testName}_$SID.e 2> $tempDir/compile_riscv64_c2e.log
+				errCode=$?
+				if [ $errCode = 124 ]
+				then 
+					mailFormat=RUN_TIMEOUT
+					echo "Error: Timelimit exceeded while compile MiniC file \"${testName}.c\" to eeyore with your executable file!" >> $logDir/riscv64.rep
+					echo "[`date`][$SID] Timelimit exceeded while running eeyore for \"${testName}.c\" with student[$stuID]'s eeyore"
+					checkRun cp $tempDir/compile_riscv64_c2e.log ./
+					return
+				elif [ $errCode != 0 ]
+				then
+					mailFormat=RUNTIME_ERROR
+					echo "Error: Runtime error occurred while compiling MiniC file \"${testName}.c\" to eeyore with your excutable file! You may find more details below or in the file attached with this email." >> $logDir/riscv64.rep
+					echo "[`date`][$SID] Runtime error occurred while running eeyore for \"${testName}.c\" with student[$stuID]'s eeyore"
+					checkRun cp $tempDir/compile_riscv64_c2e.log ./
+					return
+				fi
 				checkRun cp $tempDir/compile_riscv64_c2e.log ./
-				return
-			elif [ $errCode != 0 ]
-			then
-				mailFormat=RUNTIME_ERROR
-				echo "Error: Runtime error occurred while compiling MiniC file \"${testName}.c\" to eeyore with your excutable file! You may find more details below or in the file attached with this email." >> $logDir/riscv64.rep
-				echo "[`date`][$SID] Runtime error occurred while running eeyore for \"${testName}.c\" with student[$stuID]'s eeyore"
-				checkRun cp $tempDir/compile_riscv64_c2e.log ./
-				return
-			fi
-			checkRun cp $tempDir/compile_riscv64_c2e.log ./
 			
-			# Use tigger compile eeyore file
-			timeout $timeOut ./tigger < $tempDir/${testName}_$SID.e > $tempDir/${testName}_$SID.t 2> $tempDir/compile_riscv64_e2t.log
-			errCode=$?
-			if [ $errCode = 124 ]
-			then 
-				mailFormat=RUN_TIMEOUT
-				echo "Error: Timelimit exceeded while compile eeyore file \"${testName}.e\" to tigger with your executable file!" >> $logDir/riscv64.rep
-				echo "[`date`][$SID] Timelimit exceeded while running tigger for \"${testName}.e\" with student[$stuID]'s tigger"
+				# Use tigger compile eeyore file
+				timeout $timeOut ./tigger < $tempDir/${testName}_$SID.e > $tempDir/${testName}_$SID.t 2> $tempDir/compile_riscv64_e2t.log
+				errCode=$?
+				if [ $errCode = 124 ]
+				then 
+					mailFormat=RUN_TIMEOUT
+					echo "Error: Timelimit exceeded while compile eeyore file \"${testName}.e\" to tigger with your executable file!" >> $logDir/riscv64.rep
+					echo "[`date`][$SID] Timelimit exceeded while running tigger for \"${testName}.e\" with student[$stuID]'s tigger"
+					checkRun cp $tempDir/compile_riscv64_e2t.log ./
+					return
+				elif [ $errCode != 0 ]
+				then
+					mailFormat=RUNTIME_ERROR
+					echo "Error: Runtime error occurred while compiling eeyore file \"${testName}.e\" to tigger with your excutable file! You may find more details below or in the file attached with this email." >> $logDir/riscv64.rep
+					echo "[`date`][$SID] Runtime error occurred while running tigger for \"${testName}.e\" with student[$stuID]'s tigger"
+					checkRun cp $tempDir/compile_riscv64_e2t.log ./
+					return
+				fi
 				checkRun cp $tempDir/compile_riscv64_e2t.log ./
-				return
-			elif [ $errCode != 0 ]
-			then
-				mailFormat=RUNTIME_ERROR
-				echo "Error: Runtime error occurred while compiling eeyore file \"${testName}.e\" to tigger with your excutable file! You may find more details below or in the file attached with this email." >> $logDir/riscv64.rep
-				echo "[`date`][$SID] Runtime error occurred while running tigger for \"${testName}.e\" with student[$stuID]'s tigger"
-				checkRun cp $tempDir/compile_riscv64_e2t.log ./
-				return
-			fi
-			checkRun cp $tempDir/compile_riscv64_e2t.log ./
 
-			# Use riscv64 compile tigger file
-			timeout $timeOut ./riscv64 < $tempDir/${testName}_$SID.t > $tempDir/${testName}_$SID.s 2> $tempDir/compile_riscv64_t2s.log
-			errCode=$?
-			if [ $errCode = 124 ]
-			then 
-				mailFormat=RUN_TIMEOUT
-				echo "Error: Timelimit exceeded while compile tigger file \"${testName}.t\" to assemble language with your executable file!" >> $logDir/riscv64.rep
-				echo "[`date`][$SID] Timelimit exceeded while running riscv64 for \"${testName}.t\" with student[$stuID]'s riscv64"
+				# Use riscv64 compile tigger file
+				timeout $timeOut ./riscv64 < $tempDir/${testName}_$SID.t > $tempDir/${testName}_$SID.s 2> $tempDir/compile_riscv64_t2s.log
+				errCode=$?
+				if [ $errCode = 124 ]
+				then 
+					mailFormat=RUN_TIMEOUT
+					echo "Error: Timelimit exceeded while compile tigger file \"${testName}.t\" to assemble language with your executable file!" >> $logDir/riscv64.rep
+					echo "[`date`][$SID] Timelimit exceeded while running riscv64 for \"${testName}.t\" with student[$stuID]'s riscv64"
+					checkRun cp $tempDir/compile_riscv64_t2s.log ./
+					return
+				elif [ $errCode != 0 ]
+				then
+					mailFormat=RUNTIME_ERROR
+					echo "Error: Runtime error occurred while compiling tigger file \"${testName}.t\" to assemble language with your excutable file! You may find more details below or in the file attached with this email." >> $logDir/riscv64.rep
+					echo "[`date`][$SID] Runtime error occurred while running riscv64 for \"${testName}.t\" with student[$stuID]'s riscv64"
+					checkRun cp $tempDir/compile_riscv64_t2s.log ./
+					return
+				fi
 				checkRun cp $tempDir/compile_riscv64_t2s.log ./
-				return
-			elif [ $errCode != 0 ]
-			then
-				mailFormat=RUNTIME_ERROR
-				echo "Error: Runtime error occurred while compiling tigger file \"${testName}.t\" to assemble language with your excutable file! You may find more details below or in the file attached with this email." >> $logDir/riscv64.rep
-				echo "[`date`][$SID] Runtime error occurred while running riscv64 for \"${testName}.t\" with student[$stuID]'s riscv64"
-				checkRun cp $tempDir/compile_riscv64_t2s.log ./
-				return
 			fi
-			checkRun cp $tempDir/compile_riscv64_t2s.log ./
-
+			
 			# Compiling assemble language to machine language
 			timeout $timeOut $riscvPath/riscv64-unknown-elf-gcc $tempDir/${testName}_$SID.s $installPath/lib/lib64.s -static -o $tempDir/${testName}_$SID > $tempDir/compile_riscv64_s2o.log 2>&1
 			errCode=$?
