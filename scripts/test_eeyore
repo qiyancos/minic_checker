@@ -5,6 +5,7 @@ tempDir=$installPath/temp
 logDir=$installPath/log
 interval=5m #INTERVAL
 ftpRoot="FTPROOT"
+ftpTemp=$ftpRoot/temp
 userName="USERNAME"
 timeOut="10" #Time Unit: second
 SID=$RANDOM
@@ -100,7 +101,6 @@ checkLab(){
 			checkRun cp $tempDir/compile_eeyore.log ./
 			return
 		fi
-		$installPath/scripts/secure_mode -stop
 		checkRun cp $tempDir/compile_eeyore.log ./
 
 		# Start test
@@ -109,38 +109,41 @@ checkLab(){
 			mailFormat=NO_BINARY_FILE
 			echo "Error: Can not locate binary file \"eeyore\" for compilation!" >> $logDir/eeyore.rep
 			echo "[`date`][$SID] Cannot locate binary file compiled with compiling method for student[$stuID]"
+			$installPath/scripts/secure_mode -stop
 			return
 		fi
 		for file in $testDir/*.c
 		do
 			testName=(`basename $file | sed 's/\./ /g'`)
+			checkRun cp $file $ftpTemp/test_$SID.c
 			
 			# Use eeyore compile C file
-			timeout $timeOut ./eeyore < $file > $tempDir/${testName}_$SID.e 2> $tempDir/compile_eeyore_c2e.log
+			echo -e "cd $eeyoreDir\n./eeyore < $ftpTemp/test_$SID.c" | timeout $timeOut su - $userName  > $ftpTemp/test_$SID.e 2> $tempDir/compile_eeyore_c2e.log
 			errCode=$?
 			if [ $errCode = 124 ]
 			then 
 				mailFormat=RUN_TIMEOUT
 				echo "Error: Timelimit exceeded while compile MiniC file \"${testName}.c\" to eeyore with your executable file!" >> $logDir/eeyore.rep
 				echo "[`date`][$SID] Timelimit exceeded while running eeyore for \"${testName}.c\" with student[$stuID]'s eeyore"
+				$installPath/scripts/secure_mode -stop
 				checkRun cp $tempDir/compile_eeyore_c2e.log ./
 				return
 			elif [ $errCode != 0 ]
 			then
 				mailFormat=RUNTIME_ERROR
-				#echo -e "\nRunning result may hold some useful information:\n" >> $tempDir/compile_c2e.log
-				#cat $tempDir/${testName}_$SID.e >> $tempDir/compile_c2e.log
 				echo "Error: Runtime error occurred while compiling MiniC file \"${testName}.c\" to eeyore with your excutable file! You may find more details below or in the file attached with this email." >> $logDir/eeyore.rep
 				echo "[`date`][$SID] Runtime error occurred while running eeyore for \"${testName}.c\" with student[$stuID]'s eeyore"
+				$installPath/scripts/secure_mode -stop
 				checkRun cp $tempDir/compile_eeyore_c2e.log ./
 				return
 			fi
 			checkRun cp $tempDir/compile_eeyore_c2e.log ./
+			$installPath/scripts/secure_mode -stop
 
 			# Simulating eeyore file
 			if [ -f $testDir/$testName.input ]
-			then timeout $timeOut sudo $installPath/bin/Eeyore $tempDir/${testName}_$SID.e < $testDir/$testName.input > $tempDir/${testName}_$SID.result 2> $tempDir/simulate_eeyore.log
-			else timeout $timeOut sudo $installPath/bin/Eeyore $tempDir/${testName}_$SID.e > $tempDir/${testName}_$SID.result 2> $tempDir/simulate_eeyore.log
+			then timeout $timeOut sudo $installPath/bin/Eeyore $ftpTemp/test_$SID.e < $testDir/$testName.input > $tempDir/${testName}_$SID.result 2> $tempDir/simulate_eeyore.log
+			else timeout $timeOut sudo $installPath/bin/Eeyore $ftpTemp/test_$SID.e > $tempDir/${testName}_$SID.result 2> $tempDir/simulate_eeyore.log
 			fi
 			errCode=$?
 			if [ $errCode = 124 ]

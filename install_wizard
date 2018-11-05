@@ -227,6 +227,7 @@ then
 		errCode=$?
 	done
 fi
+checkRun mkdir -p $userRoot/temp 
 sudo sed -i "/guest_username/c guest_username=$userName" /etc/vsftpd.conf
 $RUNMSG ">> Host FTP User Initiation Completed!"
 
