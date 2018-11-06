@@ -74,8 +74,7 @@ checkLab(){
 		elif [ -f ./compile ]
 		then 
 			chmod +x ./compile
-			sed -i 's/
-//g' ./compile
+			sed -i 's///g' ./compile
 			echo -e "cd $riscv64Dir\nbash ./compile" | timeout $timeOut su - $userName > $tempDir/compile_riscv64.log 2>&1
 		else 
 			mailFormat=NO_COMPILE_METHOD
