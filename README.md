@@ -68,7 +68,7 @@ We provide this function to help administrator manage the README files, which ca
 
 ### Service Log
 
-To make sure that every incident can be recorded and examined later for MiniC Checker. We will keep log files for both the normal kind of services and MiniC Checker daemon service. These logs are hold in the folder named as "log" in the install path.  
+To make sure that every incident can be recorded and examined later for MiniC Checker. We will keep log files for both the normal kind of services and MiniC Checker daemon service. These logs are held in the folder named as "log" in the install path.  
 
 ### Mail-Format File
 
@@ -78,7 +78,7 @@ We also build a new format file used for auto-mailing system. The format file is
 - New defination will override the former one.
 - Default defination for lower level is allowed and will be used for those higher level, which does not hold the defination for that level.
 - The lowest level should be **TITLE**, **CONTENT** and **ATTACH**, which respectively respects title, content and file list that will be attached with the email.
-- **CONTENT** defination can be raw text or file that hold the text for the email. And the raw text will added to the attachment as a file if it is too long for reading.  
+- **CONTENT** defination can be raw text or file that holds the text for the email. And the raw text will added to the attachment as a file if it is too long for reading.  
 - Even if we used a file list to define the attached files, multiple files will still be compressed to a single file as only one attachment is allowed for ***heirloom-mailx***.
 
 ## File Structure
@@ -86,7 +86,7 @@ We also build a new format file used for auto-mailing system. The format file is
 ### File Structure for Source Code:
 
 - bin: Executable binary files, which will be regenerated when running installation.
-- config: Config files for ***heirloom-mailx*** and ***vsftpd***. Mail-format file are also hold here.
+- config: Config files for ***heirloom-mailx*** and ***vsftpd***. Mail-format file are also held here.
 - lib: Lib used for compiling.
 - scripts: Scripts used for MiniC Checker.
 - src: Source file for simulator or mail-format file interpreter.
