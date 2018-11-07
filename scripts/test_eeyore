@@ -115,10 +115,14 @@ checkLab(){
 		do
 			testName=(`basename $file | sed 's/\./ /g'`)
 			checkRun cp $file $ftpTemp/test_$SID.c
-			
+			#if [ -f $tempDir/compile_eeyore_*.log ]
+			#then checkRun rm $tempDir/compile_eeyore_*.log
+			#fi
+
 			# Use eeyore compile C file
 			echo -e "cd $eeyoreDir\n./eeyore < $ftpTemp/test_$SID.c" | timeout $timeOut su - $userName  > $ftpTemp/test_$SID.e 2> $tempDir/compile_eeyore_c2e.log
 			errCode=$?
+			checkRun cp $tempDir/compile_eeyore_c2e.log ./compile_eeyore_runtime.log
 			if [ $errCode = 124 ]
 			then 
 				mailFormat=RUN_TIMEOUT

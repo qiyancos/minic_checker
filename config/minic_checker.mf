@@ -59,7 +59,7 @@ INSTALLPATH/temp/compile_eeyore.log
 		}RUN_TIMEOUT
 		RUNTIME_ERROR{
 			ATTACH{
-INSTALLPATH/temp/compile_eeyore_c2e.log
+INSTALLPATH/temp/compile_eeyore_runtime.log
 			}ATTACH
 		}RUNTIME_ERROR
 		SIM_TIMEOUT{
@@ -97,9 +97,7 @@ INSTALLPATH/temp/compile_tigger.log
 		}RUN_TIMEOUT
 		RUNTIME_ERROR{
 			ATTACH{
-INSTALLPATH/temp/compile_tigger_c2t.log
-INSTALLPATH/temp/compile_tigger_c2e.log 
-INSTALLPATH/temp/compile_tigger_e2t.log 
+INSTALLPATH/temp/compile_tigger_runtime.log 
 			}ATTACH
 		}RUNTIME_ERROR
 		SIM_TIMEOUT{
@@ -137,10 +135,7 @@ INSTALLPATH/temp/compile_riscv32.log
 		}RUN_TIMEOUT
 		RUNTIME_ERROR{
 			ATTACH{
-INSTALLPATH/temp/compile_riscv32_c2e.log
-INSTALLPATH/temp/compile_riscv32_e2t.log
-INSTALLPATH/temp/compile_riscv32_t2s.log
-INSTALLPATH/temp/compile_riscv32_c2s.log
+INSTALLPATH/temp/compile_riscv32_runtime.log
 			}ATTACH
 		}RUNTIME_ERROR
 		COMPILE_ASSEMBLE_TIMEOUT{
@@ -185,10 +180,7 @@ INSTALLPATH/temp/compile_riscv64.log
 		}RUN_TIMEOUT
 		RUNTIME_ERROR{
 			ATTACH{
-INSTALLPATH/temp/compile_riscv64_c2e.log
-INSTALLPATH/temp/compile_riscv64_e2t.log
-INSTALLPATH/temp/compile_riscv64_t2s.log
-INSTALLPATH/temp/compile_riscv64_c2s.log
+INSTALLPATH/temp/compile_riscv64_runtime.log
 			}ATTACH
 		}RUNTIME_ERROR
 		COMPILE_ASSEMBLE_TIMEOUT{

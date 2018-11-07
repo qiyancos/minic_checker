@@ -116,15 +116,16 @@ checkLab(){
 		do
 			testName=(`basename $file | sed 's/\./ /g'`)
 			checkRun cp $file $ftpTemp/test_$SID.c
-			if [ -f $tempDir/compile_tigger_*.log ]
-			then checkRun rm $tempDir/compile_tigger_*.log
-			fi		
+			#if [ -f $tempDir/compile_tigger_*.log ]
+			#then checkRun rm $tempDir/compile_tigger_*.log
+			#fi		
 			
 			if [ -f ./tiggerC ]
 			then
 				# Use tiggerC compile C file
 				echo -e "cd $tiggerDir\n./tiggerC < $ftpTemp/test_$SID.c" | timeout $timeOut su - $userName  > $ftpTemp/test_$SID.t 2> $tempDir/compile_tigger_c2t.log
 				errCode=$?
+				checkRun cp $tempDir/compile_tigger_c2t.log ./compile_tigger_runtime.log
 				if [ $errCode = 124 ]
 				then 
 					mailFormat=RUN_TIMEOUT
@@ -147,6 +148,7 @@ checkLab(){
 				# Use eeyore compile C file
 				echo -e "cd $tiggerDir\n./eeyore < $ftpTemp/test_$SID.c" | timeout $timeOut su - $userName  > $ftpTemp/test_$SID.e 2> $tempDir/compile_tigger_c2e.log
 				errCode=$?
+				checkRun cp $tempDir/compile_tigger_c2e.log ./compile_tigger_runtime.log
 				if [ $errCode = 124 ]
 				then 
 					mailFormat=RUN_TIMEOUT
@@ -169,6 +171,7 @@ checkLab(){
 				# Use tigger compile eeyore file
 				echo -e "cd $tiggerDir\n./tigger < $ftpTemp/test_$SID.e" | timeout $timeOut su - $userName  > $ftpTemp/test_$SID.t 2> $tempDir/compile_tigger_e2t.log
 				errCode=$?
+				checkRun cp $tempDir/compile_tigger_e2t.log ./compile_tigger_runtime.log
 				if [ $errCode = 124 ]
 				then 
 					mailFormat=RUN_TIMEOUT
