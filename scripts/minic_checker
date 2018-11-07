@@ -9,8 +9,8 @@ if [ ${1}x = -hx -o ${1}x = x ]
 then 
 	echo "Usage: minic_checker [Options] [Lab/File]"
 	echo "  [Options]"
-	echo "    -start,  Start auto-check system for a lab"
-	echo "    -stop,   Stop auto-check system for a lab"
+	echo "    -start,  Start auto-check service for the specified lab"
+	echo "    -stop,   Stop auto-check service for the specified lab"
 	echo "    -notify, Update README files for students with the given file"
 	echo "    -tar,    Pack the homeworks from all students, the compressed" 
 	echo "             file will be saved to current directory."
