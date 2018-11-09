@@ -52,8 +52,8 @@ fi
 $RUNMSG ">> Looking for riscv-tool-chain..."
 while [ 1 ]
 do
-	echo "If you have installed riscv-tool chain, please type in a path to the folder, which holds the binary files or where we should install riscv-tool-chain for you. Otherwise ENTER [N] to quit? "
-	echo -n "[<path to riscv-tool-chain>/N] "
+	echo "If you have installed riscv-tool chain, please type in the full path to the folder, which holds the binary files or where we should install riscv-tool-chain for you. Otherwise ENTER [N] to quit? "
+	echo -n "[<FULL path to riscv-tool-chain>/N] "
 	read flag
 	if [ ${flag}x = x ]
 	then 
