@@ -307,7 +307,7 @@ while [ 1 ]
 do
 	echo -n "Please ENTER your password for $emailAddr:"
 	read -s password_test; echo
-	echo -n "Please RETYPE your password:"
+	echo -n "Please RETYPE to configure your password:"
 	read -s password; echo
 	if [ ${password_test}x != ${password}x ]
 	then
