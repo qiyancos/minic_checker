@@ -108,15 +108,9 @@ then
 fi
 $WARN; echo " Minic Checker will be installed to [$installPath]!"
 
-if [ ! -d $installPath ]
-then checkRun "mkdir -p $installPath"
-fi
-if [ ! -d $installPath/backup ]
-then checkRun "mkdir $installPath/backup"
-fi
-if [ ! -d $installPath/config ]
-then checkRun "mkdir $installPath/config"
-fi
+checkRun "mkdir -p $installPath"
+checkRun "mkdir -p $installPath/backup"
+checkRun "mkdir -p $installPath/config"
 if [ $installRiscv = 1 ]
 then
 	$RUNMSG ">> Start Installing riscv-tool-chain"
@@ -126,9 +120,7 @@ then
 	checkRun mkdir -p $riscvPath/riscv-tool-chain
 	checkRun cd $riscvPath
 	$RUNMSG ">> Cloning riscv-tools from github.com..."
-	if [ -d $riscvPath/riscv-tools ]
-	then checkRun rm -rf $riscvPath/riscv-tools
-	fi
+	checkRun rm -rf $riscvPath/riscv-tools
 	checkRun git clone https://github.com/riscv/riscv-tools.git
 	checkRun cd ./riscv-tools
 	$RUNMSG ">> Updating submodules..."
@@ -219,7 +211,7 @@ if [ "$userRoot" = none ]
 then
 	$RUNMSG ">> Creating new user [$userName]..."
 	if [ ! -d /home/$userName ]
-	then checkRun "sudo mkdir -m 555 /home/$userName"
+	then checkRun "sudo mkdir -pm 555 /home/$userName"
 	fi
 	userRoot=/home/$userName
 	checkRun "sudo useradd -d $userRoot -s /bin/bash $userName"
@@ -237,10 +229,8 @@ $RUNMSG ">> Host FTP User Initiation Completed!"
 
 # Setup virtual users for students
 $RUNMSG ">> Add Students as FTP Virtual Users"
-if [ -d /etc/vsftpd ]
-then checkRun "sudo rm -r /etc/vsftpd"
-fi
-checkRun "sudo mkdir -p /etc/vsftpd/config"
+checkRun sudo rm -rf /etc/vsftpd
+checkRun sudo mkdir -p /etc/vsftpd/config
 stuCount=(`checkRun "wc -l $root/students.list"`)
 stuCount=${stuCount[0]}
 lineNum=1
@@ -333,7 +323,7 @@ $RUNMSG ">> Auto-Mail-Sending System Initiation Completed!"
 $RUNMSG ">> Copy Files and Build Simulator Required for Minic Checker"
 # Copy Files
 checkRun "g++ $root/src/build_mf.cpp -o $root/bin/build_mf"
-checkRun "mkdir $installPath/lib"
+checkRun "mkdir -p $installPath/lib"
 checkRun "$riscvPath/riscv32-unknown-linux-gnu-gcc -S $root/src/lib.c -o $installPath/lib/lib32.s"
 checkRun "$riscvPath/riscv64-unknown-elf-gcc -S $root/src/lib.c -o $installPath/lib/lib64.s"
 $RUNMSG ">> Building Simulator..."

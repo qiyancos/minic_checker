@@ -13,10 +13,10 @@ SID=$RANDOM
 
 checkRun(){
 	$*
-	errCode=$?
-	if [ $errCode != 0 ]
+	errCodeRun=$?
+	if [ $errCodeRun != 0 ]
 	then 
-		echo "[`date`][SID] Error occurred while executing command line: \"$*\". Returned with error code ($errCode)"
+		echo "[`date`][SID] Error occurred while executing command line: \"$*\". Returned with error code ($errCodeRun)"
 		exit
 	fi
 }
@@ -116,16 +116,15 @@ checkLab(){
 		do
 			testName=(`basename $file | sed 's/\./ /g'`)
 			checkRun cp $file $ftpTemp/test_$SID.c
-			#if [ -f $tempDir/compile_riscv64_*.log ]
-			#then checkRun rm $tempDir/compile_riscv64_*.log
-			#fi
+			checkRun rm -f ./compile_riscv64_*.log
+			checkRun rm -f ./simulate_riscv64.log
 			
 			if [ -f ./riscv64C ]
 			then
 				# Use riscv64C compile C file
 				echo -e "cd $riscv64Dir\n./riscv64C < $ftpTemp/test_$SID.c" | timeout $timeOut su - $userName  > $ftpTemp/test_$SID.s 2> $tempDir/compile_riscv64_c2s.log
 				errCode=$?
-				checkRun cp $tempDir/compile_riscv64_c2s.log ./compile_riscv64_runtime.log
+				checkRun cp $tempDir/compile_riscv64_c2s.log $tempDir/compile_riscv64_runtime.log
 				if [ $errCode = 124 ]
 				then 
 					mailFormat=RUN_TIMEOUT
@@ -148,7 +147,7 @@ checkLab(){
 				# Use eeyore compile C file
 				echo -e "cd $riscv64Dir\n./eeyore < $ftpTemp/test_$SID.c" | timeout $timeOut su - $userName  > $ftpTemp/test_$SID.e 2> $tempDir/compile_riscv64_c2e.log
 				errCode=$?
-				checkRun cp $tempDir/compile_riscv64_c2e.log ./compile_riscv64_runtime.log
+				checkRun cp $tempDir/compile_riscv64_c2e.log $tempDir/compile_riscv64_runtime.log
 				if [ $errCode = 124 ]
 				then 
 					mailFormat=RUN_TIMEOUT
@@ -171,7 +170,7 @@ checkLab(){
 				# Use tigger compile eeyore file
 				echo -e "cd $riscv64Dir\n./tigger < $ftpTemp/test_$SID.e" | timeout $timeOut su - $userName  > $ftpTemp/test_$SID.t 2> $tempDir/compile_riscv64_e2t.log
 				errCode=$?
-				checkRun cp $tempDir/compile_riscv64_e2t.log ./compile_riscv64_runtime.log
+				checkRun cp $tempDir/compile_riscv64_e2t.log $tempDir/compile_riscv64_runtime.log
 				if [ $errCode = 124 ]
 				then 
 					mailFormat=RUN_TIMEOUT
@@ -194,7 +193,7 @@ checkLab(){
 				# Use riscv64 compile tigger file
 				echo -e "cd $riscv64Dir\n./riscv64 < $ftpTemp/test_$SID.t" | timeout $timeOut su - $userName  > $ftpTemp/test_$SID.s 2> $tempDir/compile_riscv64_t2s.log
 				errCode=$?
-				checkRun cp $tempDir/compile_riscv64_t2s.log ./compile_riscv64_runtime.log
+				checkRun cp $tempDir/compile_riscv64_t2s.log $tempDir/compile_riscv64_runtime.log
 				if [ $errCode = 124 ]
 				then 
 					mailFormat=RUN_TIMEOUT
@@ -219,7 +218,7 @@ checkLab(){
 			# Compiling assemble language to machine language
 			timeout $timeOut $riscvPath/riscv64-unknown-elf-gcc $tempDir/${testName}_$SID.s $installPath/lib/lib64.s -static -o $tempDir/${testName}_$SID > $tempDir/compile_riscv64_s2o.log 2>&1
 			errCode=$?
-			checkRun cp $tempDir/compile_riscv64_s2o.log ./compile_riscv64_runtime.log
+			checkRun cp $tempDir/compile_riscv64_s2o.log $tempDir/compile_riscv64_runtime.log
 			if [ $errCode = 124 ]
 			then 
 				mailFormat=COMPILE_ASSEMBLE_TIMEOUT
