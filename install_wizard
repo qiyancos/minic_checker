@@ -61,12 +61,12 @@ do
 		continue
 	elif [ ${flag}x = Nx -o ${flag}x = nx ]
 	then abandon "Can not find or install riscv-tool-chain!"
-	elif [ -f $flag/riscv32-unknown-elf-gcc -a -f $flag/riscv64-unknown-elf-gcc -a -f $flag/riscv64-unknown-elf-run -a -f $flag/riscv32-unknown-elf-run ]
+	elif [ -f $flag/riscv32-unknown-linux-gnu-gcc -a -f $flag/riscv64-unknown-elf-gcc -a -f $flag/riscv64-unknown-elf-run -a -f $flag/riscv32-unknown-linux-gnu-run ]
 	then 
 		riscvPath=$flag
 		installRiscv=0
 		break
-	elif [ -f $flag/bin/riscv32-unknown-elf-gcc -a -f $flag/bin/riscv64-unknown-elf-gcc -a -f $flag/bin/riscv64-unknown-elf-run -a -f $flag/bin/riscv32-unknown-elf-run ]
+	elif [ -f $flag/bin/riscv32-unknown-linux-gnu-gcc -a -f $flag/bin/riscv64-unknown-elf-gcc -a -f $flag/bin/riscv64-unknown-elf-run -a -f $flag/bin/riscv32-unknown-linux-gnu-run ]
 	then
 		riscvPath=$flag/bin
 		installRiscv=0
@@ -334,7 +334,7 @@ $RUNMSG ">> Copy Files and Build Simulator Required for Minic Checker"
 # Copy Files
 checkRun "g++ $root/src/build_mf.cpp -o $root/bin/build_mf"
 checkRun "mkdir $installPath/lib"
-checkRun "$riscvPath/riscv32-unknown-elf-gcc -S $root/src/lib.c -o $installPath/lib/lib32.s"
+checkRun "$riscvPath/riscv32-unknown-linux-gnu-gcc -S $root/src/lib.c -o $installPath/lib/lib32.s"
 checkRun "$riscvPath/riscv64-unknown-elf-gcc -S $root/src/lib.c -o $installPath/lib/lib64.s"
 $RUNMSG ">> Building Simulator..."
 cd $root/src/simulator
