@@ -19,7 +19,7 @@ checkRun(){
 	errCode=$?
 	if [ $errCode != 0 ]
 	then 
-		$ERROR; echo " Error encountered while executing the command line listed below:"
+		$ERROR; echo " Error(s) occurred while executing the command line listed below:"
 		$HIGHLIGHT "\"$*\""
 		echo "Returned with error code ($errCode)"
 		exit
@@ -136,9 +136,9 @@ then
 	export RISCV=$riscvPath/riscv-tool-chain
 	# $RUNMSG ">> Building riscv-tool-chain with 32-bit version..."
 	# checkRun ./build-rv32ima.sh
-	$RUNMSG ">> Building riscv-tool-chain with 64-bit version..."
+	$RUNMSG ">> Building riscv-tool-chain of 64-bit version..."
 	checkRun ./build.sh
-	$RUNMSG ">> Building riscv-tool-chain with 32-bit version..."
+	$RUNMSG ">> Building riscv-tool-chain of 32-bit version..."
 	cd ./riscv-gnu-toolchain
 	checkRun ./configure --prefix=$RISCV --with-arch=rv32gc --with-abi=ilp32d
 	checkRun make linux
