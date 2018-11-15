@@ -142,7 +142,7 @@ checkLab(){
 					checkRun cp $tempDir/compile_tigger_c2t.log ./
 					return
 				fi
-				checkRun cp $tempDir/compile_tigger_c2t.log ./
+				#checkRun cp $tempDir/compile_tigger_c2t.log ./
 			else
 				# Use eeyore compile C file
 				echo -e "cd $tiggerDir\n./eeyore < $ftpTemp/test_$SID.c" | timeout $timeOut su - $userName  > $ftpTemp/test_$SID.e 2> $tempDir/compile_tigger_c2e.log
@@ -165,7 +165,7 @@ checkLab(){
 					checkRun cp $tempDir/compile_tigger_c2e.log ./
 					return
 				fi
-				checkRun cp $tempDir/compile_tigger_c2e.log ./
+				#checkRun cp $tempDir/compile_tigger_c2e.log ./
 			
 				# Use tigger compile eeyore file
 				echo -e "cd $tiggerDir\n./tigger < $ftpTemp/test_$SID.e" | timeout $timeOut su - $userName  > $ftpTemp/test_$SID.t 2> $tempDir/compile_tigger_e2t.log
@@ -188,7 +188,7 @@ checkLab(){
 					checkRun cp $tempDir/compile_tigger_e2t.log ./
 					return
 				fi
-				checkRun cp $tempDir/compile_tigger_e2t.log ./
+				#checkRun cp $tempDir/compile_tigger_e2t.log ./
 			fi
 			$installPath/scripts/secure_mode -stop
 			

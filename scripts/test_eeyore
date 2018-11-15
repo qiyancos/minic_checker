@@ -139,7 +139,7 @@ checkLab(){
 				checkRun cp $tempDir/compile_eeyore_c2e.log ./
 				return
 			fi
-			checkRun cp $tempDir/compile_eeyore_c2e.log ./
+			#checkRun cp $tempDir/compile_eeyore_c2e.log ./
 			$installPath/scripts/secure_mode -stop
 
 			# Simulating eeyore file

@@ -142,7 +142,7 @@ checkLab(){
 					checkRun cp $tempDir/compile_riscv32_c2s.log ./
 					return
 				fi
-				checkRun cp $tempDir/compile_riscv32_c2s.log ./
+				# checkRun cp $tempDir/compile_riscv32_c2s.log ./
 			else
 				# Use eeyore compile C file
 				echo -e "cd $riscv32Dir\n./eeyore < $ftpTemp/test_$SID.c" | timeout $timeOut su - $userName  > $ftpTemp/test_$SID.e 2> $tempDir/compile_riscv32_c2e.log
@@ -165,7 +165,7 @@ checkLab(){
 					checkRun cp $tempDir/compile_riscv32_c2e.log ./
 					return
 				fi
-				checkRun cp $tempDir/compile_riscv32_c2e.log ./
+				# checkRun cp $tempDir/compile_riscv32_c2e.log ./
 			
 				# Use tigger compile eeyore file
 				echo -e "cd $riscv32Dir\n./tigger < $ftpTemp/test_$SID.e" | timeout $timeOut su - $userName  > $ftpTemp/test_$SID.t 2> $tempDir/compile_riscv32_e2t.log
@@ -188,7 +188,7 @@ checkLab(){
 					checkRun cp $tempDir/compile_riscv32_e2t.log ./
 					return
 				fi
-				checkRun cp $tempDir/compile_riscv32_e2t.log ./
+				# checkRun cp $tempDir/compile_riscv32_e2t.log ./
 
 				# Use riscv32 compile tigger file
 				echo -e "cd $riscv32Dir\n./riscv32 < $ftpTemp/test_$SID.t" | timeout $timeOut su - $userName  > $ftpTemp/test_$SID.s 2> $tempDir/compile_riscv32_t2s.log
@@ -211,7 +211,7 @@ checkLab(){
 					checkRun cp $tempDir/compile_riscv32_t2s.log ./
 					return
 				fi
-				checkRun cp $tempDir/compile_riscv32_t2s.log ./
+				# checkRun cp $tempDir/compile_riscv32_t2s.log ./
 			fi
 			$installPath/scripts/secure_mode -stop
 			
