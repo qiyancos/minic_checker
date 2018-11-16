@@ -7,7 +7,7 @@ void stmt_func_begin::run()
 {
     ssp = stackSlotNum;
     st = new int[stackSlotNum];
-    //sp += stackSlotNum;
+	//sp += stackSlotNum;
     //stackmem.resize(stackmem.size() + stackSlotNum);
     ++pc;
 }
@@ -183,6 +183,10 @@ void stmt_store_global::run()
 
 void stmt_load_local::run()
 {
+	if(snum + 1 > ssp){
+		fprintf(stderr, "Error: Stack Overflow!\n");
+		exit(1);
+	}
     reg[rnum] = st[snum];
     ++pc;
 }
