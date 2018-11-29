@@ -216,7 +216,7 @@ checkLab(){
 			$installPath/scripts/secure_mode -stop
 			
 			# Compiling assemble language to machine language
-			timeout $timeOut $riscvPath/riscv64-unknown-elf-gcc $tempDir/${testName}_$SID.s $installPath/lib/lib64.s -static -o $tempDir/${testName}_$SID > $tempDir/compile_riscv64_s2o.log 2>&1
+			timeout $timeOut $riscvPath/riscv64-unknown-elf-gcc $ftpTemp/test_$SID.s $installPath/lib/lib64.s -static -o $ftpTemp/test_$SID > $tempDir/compile_riscv64_s2o.log 2>&1
 			errCode=$?
 			checkRun cp $tempDir/compile_riscv64_s2o.log $tempDir/compile_riscv64_runtime.log
 			if [ $errCode = 124 ]
@@ -238,8 +238,8 @@ checkLab(){
 
 			# Simulating riscv64 elf file
 			if [ -f $testDir/$testName.input ]
-			then timeout $timeOut sudo $riscvPath/riscv64-unknown-elf-run $tempDir/${testName}_$SID < $testDir/$testName.input > $tempDir/${testName}_$SID.result 2> $tempDir/simulate_riscv64.log
-			else timeout $timeOut sudo $riscvPath/riscv64-unknown-elf-run $tempDir/${testName}_$SID > $tempDir/${testName}_$SID.result 2> $tempDir/simulate_riscv64.log
+			then timeout $timeOut sudo $riscvPath/riscv64-unknown-elf-run $ftpTemp/test_$SID < $testDir/$testName.input > $tempDir/${testName}_$SID.result 2> $tempDir/simulate_riscv64.log
+			else timeout $timeOut sudo $riscvPath/riscv64-unknown-elf-run $ftpTemp/test_$SID > $tempDir/${testName}_$SID.result 2> $tempDir/simulate_riscv64.log
 			fi
 			errCode=$?
 			if [ $errCode = 124 ]
