@@ -165,6 +165,10 @@ void stmt_label::run()
 
 void stmt_store_local::run()
 {
+	if(snum + 1 > ssp){
+		fprintf(stderr, "Error: Stack Overflow!\n");
+		exit(1);
+	}
     st[snum] = reg[rnum];
     ++pc;
 }
