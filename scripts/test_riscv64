@@ -8,7 +8,8 @@ interval=5m #INTERVAL
 ftpRoot="FTPROOT"
 ftpTemp=$ftpRoot/temp
 userName="USERNAME"
-timeOut="10" #Time Unit: second
+cpTimeOut="20"
+runTimeOut="10" #Time Unit: second
 SID=$RANDOM
 
 checkRun(){
@@ -70,12 +71,12 @@ checkLab(){
 		
 		$installPath/scripts/secure_mode -start
 		if [ -f ./makefile -o -f ./Makefile ]
-		then echo -e "cd $riscv64Dir\nmake" | timeout $timeOut su - $userName > $tempDir/compile_riscv64.log 2>&1 
+		then echo -e "cd $riscv64Dir\nmake" | timeout $cpTimeOut su - $userName > $tempDir/compile_riscv64.log 2>&1 
 		elif [ -f ./compile ]
 		then 
 			chmod +x ./compile
 			sed -i 's///g' ./compile
-			echo -e "cd $riscv64Dir\nbash ./compile" | timeout $timeOut su - $userName > $tempDir/compile_riscv64.log 2>&1
+			echo -e "cd $riscv64Dir\nbash ./compile" | timeout $cpTimeOut su - $userName > $tempDir/compile_riscv64.log 2>&1
 		else 
 			mailFormat=NO_COMPILE_METHOD
 			echo "Error: Cann't find an appropriate method to compile your source file!" >> $logDir/riscv64.rep
@@ -122,7 +123,7 @@ checkLab(){
 			if [ -f ./riscv64C ]
 			then
 				# Use riscv64C compile C file
-				echo -e "cd $riscv64Dir\n./riscv64C < $ftpTemp/test_$SID.c" | timeout $timeOut su - $userName  > $ftpTemp/test_$SID.s 2> $tempDir/compile_riscv64_c2s.log
+				echo -e "cd $riscv64Dir\n./riscv64C < $ftpTemp/test_$SID.c" | timeout $runTimeOut su - $userName  > $ftpTemp/test_$SID.s 2> $tempDir/compile_riscv64_c2s.log
 				errCode=$?
 				checkRun cp $tempDir/compile_riscv64_c2s.log $tempDir/compile_riscv64_runtime.log
 				if [ $errCode = 124 ]
@@ -145,7 +146,7 @@ checkLab(){
 				# checkRun cp $tempDir/compile_riscv64_c2s.log ./
 			else
 				# Use eeyore compile C file
-				echo -e "cd $riscv64Dir\n./eeyore < $ftpTemp/test_$SID.c" | timeout $timeOut su - $userName  > $ftpTemp/test_$SID.e 2> $tempDir/compile_riscv64_c2e.log
+				echo -e "cd $riscv64Dir\n./eeyore < $ftpTemp/test_$SID.c" | timeout $runTimeOut su - $userName  > $ftpTemp/test_$SID.e 2> $tempDir/compile_riscv64_c2e.log
 				errCode=$?
 				checkRun cp $tempDir/compile_riscv64_c2e.log $tempDir/compile_riscv64_runtime.log
 				if [ $errCode = 124 ]
@@ -168,7 +169,7 @@ checkLab(){
 				# checkRun cp $tempDir/compile_riscv64_c2e.log ./
 			
 				# Use tigger compile eeyore file
-				echo -e "cd $riscv64Dir\n./tigger < $ftpTemp/test_$SID.e" | timeout $timeOut su - $userName  > $ftpTemp/test_$SID.t 2> $tempDir/compile_riscv64_e2t.log
+				echo -e "cd $riscv64Dir\n./tigger < $ftpTemp/test_$SID.e" | timeout $runTimeOut su - $userName  > $ftpTemp/test_$SID.t 2> $tempDir/compile_riscv64_e2t.log
 				errCode=$?
 				checkRun cp $tempDir/compile_riscv64_e2t.log $tempDir/compile_riscv64_runtime.log
 				if [ $errCode = 124 ]
@@ -191,7 +192,7 @@ checkLab(){
 				# checkRun cp $tempDir/compile_riscv64_e2t.log ./
 
 				# Use riscv64 compile tigger file
-				echo -e "cd $riscv64Dir\n./riscv64 < $ftpTemp/test_$SID.t" | timeout $timeOut su - $userName  > $ftpTemp/test_$SID.s 2> $tempDir/compile_riscv64_t2s.log
+				echo -e "cd $riscv64Dir\n./riscv64 < $ftpTemp/test_$SID.t" | timeout $runTimeOut su - $userName  > $ftpTemp/test_$SID.s 2> $tempDir/compile_riscv64_t2s.log
 				errCode=$?
 				checkRun cp $tempDir/compile_riscv64_t2s.log $tempDir/compile_riscv64_runtime.log
 				if [ $errCode = 124 ]
@@ -216,7 +217,7 @@ checkLab(){
 			$installPath/scripts/secure_mode -stop
 			
 			# Compiling assemble language to machine language
-			timeout $timeOut $riscvPath/riscv64-unknown-elf-gcc $ftpTemp/test_$SID.s $installPath/lib/lib64.s -static -o $ftpTemp/test_$SID > $tempDir/compile_riscv64_s2o.log 2>&1
+			timeout $runTimeOut $riscvPath/riscv64-unknown-elf-gcc $ftpTemp/test_$SID.s $installPath/lib/lib64.s -static -o $ftpTemp/test_$SID > $tempDir/compile_riscv64_s2o.log 2>&1
 			errCode=$?
 			checkRun cp $tempDir/compile_riscv64_s2o.log $tempDir/compile_riscv64_runtime.log
 			if [ $errCode = 124 ]
@@ -238,8 +239,8 @@ checkLab(){
 
 			# Simulating riscv64 elf file
 			if [ -f $testDir/$testName.input ]
-			then timeout $timeOut sudo $riscvPath/riscv64-unknown-elf-run $ftpTemp/test_$SID < $testDir/$testName.input > $tempDir/${testName}_$SID.result 2> $tempDir/simulate_riscv64.log
-			else timeout $timeOut sudo $riscvPath/riscv64-unknown-elf-run $ftpTemp/test_$SID > $tempDir/${testName}_$SID.result 2> $tempDir/simulate_riscv64.log
+			then timeout $runTimeOut sudo $riscvPath/riscv64-unknown-elf-run $ftpTemp/test_$SID < $testDir/$testName.input > $tempDir/${testName}_$SID.result 2> $tempDir/simulate_riscv64.log
+			else timeout $runTimeOut sudo $riscvPath/riscv64-unknown-elf-run $ftpTemp/test_$SID > $tempDir/${testName}_$SID.result 2> $tempDir/simulate_riscv64.log
 			fi
 			errCode=$?
 			if [ $errCode = 124 ]

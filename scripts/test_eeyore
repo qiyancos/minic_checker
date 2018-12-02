@@ -7,7 +7,8 @@ interval=5m #INTERVAL
 ftpRoot="FTPROOT"
 ftpTemp=$ftpRoot/temp
 userName="USERNAME"
-timeOut="10" #Time Unit: second
+cpTimeOut="20"
+runTimeOut="10" #Time Unit: second
 SID=$RANDOM
 
 checkRun(){
@@ -69,12 +70,12 @@ checkLab(){
 		
 		$installPath/scripts/secure_mode -start
 		if [ -f ./makefile -o -f ./Makefile ]
-		then echo -e "cd $eeyoreDir\nmake" | timeout $timeOut su - $userName > $tempDir/compile_eeyore.log 2>&1 
+		then echo -e "cd $eeyoreDir\nmake" | timeout $cpTimeOut su - $userName > $tempDir/compile_eeyore.log 2>&1 
 		elif [ -f ./compile ]
 		then 
 			chmod +x ./compile
 			sed -i 's///g' ./compile
-			echo -e "cd $eeyoreDir\nbash ./compile" | timeout $timeOut su - $userName > $tempDir/compile_eeyore.log 2>&1
+			echo -e "cd $eeyoreDir\nbash ./compile" | timeout $cpTimeOut su - $userName > $tempDir/compile_eeyore.log 2>&1
 		else 
 			mailFormat=NO_COMPILE_METHOD
 			echo "Error: Cann't find an appropriate method to compile your source file!" >> $logDir/eeyore.rep
@@ -119,7 +120,7 @@ checkLab(){
 			checkRun rm -f ./simulate_eeyore.log
 
 			# Use eeyore compile C file
-			echo -e "cd $eeyoreDir\n./eeyore < $ftpTemp/test_$SID.c" | timeout $timeOut su - $userName  > $ftpTemp/test_$SID.e 2> $tempDir/compile_eeyore_c2e.log
+			echo -e "cd $eeyoreDir\n./eeyore < $ftpTemp/test_$SID.c" | timeout $runTimeOut su - $userName  > $ftpTemp/test_$SID.e 2> $tempDir/compile_eeyore_c2e.log
 			errCode=$?
 			checkRun cp $tempDir/compile_eeyore_c2e.log $tempDir/compile_eeyore_runtime.log
 			if [ $errCode = 124 ]
@@ -144,8 +145,8 @@ checkLab(){
 
 			# Simulating eeyore file
 			if [ -f $testDir/$testName.input ]
-			then timeout $timeOut sudo $installPath/bin/Eeyore $ftpTemp/test_$SID.e < $testDir/$testName.input > $tempDir/${testName}_$SID.result 2> $tempDir/simulate_eeyore.log
-			else timeout $timeOut sudo $installPath/bin/Eeyore $ftpTemp/test_$SID.e > $tempDir/${testName}_$SID.result 2> $tempDir/simulate_eeyore.log
+			then timeout $runTimeOut sudo $installPath/bin/Eeyore $ftpTemp/test_$SID.e < $testDir/$testName.input > $tempDir/${testName}_$SID.result 2> $tempDir/simulate_eeyore.log
+			else timeout $runTimeOut sudo $installPath/bin/Eeyore $ftpTemp/test_$SID.e > $tempDir/${testName}_$SID.result 2> $tempDir/simulate_eeyore.log
 			fi
 			errCode=$?
 			if [ $errCode = 124 ]
