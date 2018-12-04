@@ -31,6 +31,10 @@
       int a23;
       int a24;
       int a25;
+	  int a26;
+	  int a27;
+	  int a28;
+	  int a29;
       int b;
       b = getint();
       while(b == 5){
@@ -62,6 +66,10 @@
       a23=a22+1;
       a24=a23+1;
       a25=a24+1;
+	  a26=a25+1;
+	  a27=a26+1;
+	  a28=a27+1;
+	  a29=a28+1;
       int t;
       t=putint(a0);t=putint(a1);t=putint(a2);t=putint(a3);
       t=putint(a4);t=putint(a5);t=putint(a6);t=putint(a7);
@@ -69,7 +77,8 @@
       t=putint(a12);t=putint(a13);t=putint(a14);t=putint(a15);
       t=putint(a16);t=putint(a17);t=putint(a18);t=putint(a19);
       t=putint(a20);t=putint(a21);t=putint(a22);t=putint(a23);
-      t=putint(a24);t=putint(a25);
+      t=putint(a24);t=putint(a25);t=putint(a26);t=putint(a27);
+	  t=putint(a28);t=putint(a29);
       int newline;
       newline = 10;
       t=putchar(newline);
