@@ -210,7 +210,7 @@ checkLab(){
 			if [ "`grep "Error\|error\|fault" $tempDir/${testName}_$SID.result`x" != x -o -s $tempDir/simulate_tigger.log ]
 			then
 				mailFormat=SIM_ERROR
-				echo "Error: Runtime occurred while simulating \"${testName}.c\" with the eeyore code generated!" >> $logDir/tigger.rep
+				echo "Error: Runtime occurred while simulating \"${testName}.c\" with the tigger code generated!" >> $logDir/tigger.rep
 				echo "[`date`][$SID] Runtime error occurred while simulating \"${testName}.c\" for student[$stuID]"
 				cat $tempDir/${testName}_$SID.result >> $tempDir/simulate_tigger.log
 				checkRun cp $tempDir/simulate_tigger.log ./

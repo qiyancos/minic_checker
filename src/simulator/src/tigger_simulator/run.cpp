@@ -5,8 +5,8 @@
 
 void stmt_func_begin::run()
 {
-    ssp = stackSlotNum;
-    st = new int[stackSlotNum];
+    ssp = stackSlotNum + 1;
+    st = new int[stackSlotNum + 1];
 	//sp += stackSlotNum;
     //stackmem.resize(stackmem.size() + stackSlotNum);
     ++pc;
