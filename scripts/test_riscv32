@@ -123,8 +123,10 @@ checkLab(){
 			if [ -f ./riscv32C ]
 			then
 				# Use riscv32C compile C file
+				checkRun chmod 555 -R $riscv32Dir
 				echo -e "cd $riscv32Dir\n./riscv32C < $ftpTemp/test_$SID.c" | timeout $runTimeOut su - $userName  > $ftpTemp/test_$SID.s 2> $tempDir/compile_riscv32_c2s.log
 				errCode=$?
+				checkRun chmod 777 -R $riscv32Dir
 				checkRun cp $tempDir/compile_riscv32_c2s.log $tempDir/compile_riscv32_runtime.log
 				if [ $errCode = 124 ]
 				then 
@@ -146,8 +148,10 @@ checkLab(){
 				# checkRun cp $tempDir/compile_riscv32_c2s.log ./
 			else
 				# Use eeyore compile C file
+				checkRun chmod 555 -R $riscv32Dir
 				echo -e "cd $riscv32Dir\n./eeyore < $ftpTemp/test_$SID.c" | timeout $runTimeOut su - $userName  > $ftpTemp/test_$SID.e 2> $tempDir/compile_riscv32_c2e.log
 				errCode=$?
+				checkRun chmod 777 -R $riscv32Dir
 				checkRun cp $tempDir/compile_riscv32_c2e.log $tempDir/compile_riscv32_runtime.log
 				if [ $errCode = 124 ]
 				then 
@@ -169,8 +173,10 @@ checkLab(){
 				# checkRun cp $tempDir/compile_riscv32_c2e.log ./
 			
 				# Use tigger compile eeyore file
+				checkRun chmod 555 -R $riscv32Dir
 				echo -e "cd $riscv32Dir\n./tigger < $ftpTemp/test_$SID.e" | timeout $runTimeOut su - $userName  > $ftpTemp/test_$SID.t 2> $tempDir/compile_riscv32_e2t.log
 				errCode=$?
+				checkRun chmod 777 -R $riscv32Dir
 				checkRun cp $tempDir/compile_riscv32_e2t.log $tempDir/compile_riscv32_runtime.log
 				if [ $errCode = 124 ]
 				then 
@@ -192,8 +198,10 @@ checkLab(){
 				# checkRun cp $tempDir/compile_riscv32_e2t.log ./
 
 				# Use riscv32 compile tigger file
+				checkRun chmod 555 -R $riscv32Dir
 				echo -e "cd $riscv32Dir\n./riscv32 < $ftpTemp/test_$SID.t" | timeout $runTimeOut su - $userName  > $ftpTemp/test_$SID.s 2> $tempDir/compile_riscv32_t2s.log
 				errCode=$?
+				checkRun chmod 777 -R $riscv32Dir
 				checkRun cp $tempDir/compile_riscv32_t2s.log $tempDir/compile_riscv32_runtime.log
 				if [ $errCode = 124 ]
 				then 

@@ -120,8 +120,10 @@ checkLab(){
 			checkRun rm -f ./simulate_eeyore.log
 
 			# Use eeyore compile C file
+			checkRun chmod 555 -R $eeyoreDir
 			echo -e "cd $eeyoreDir\n./eeyore < $ftpTemp/test_$SID.c" | timeout $runTimeOut su - $userName  > $ftpTemp/test_$SID.e 2> $tempDir/compile_eeyore_c2e.log
 			errCode=$?
+			checkRun chmod 777 -R $eeyoreDir
 			checkRun cp $tempDir/compile_eeyore_c2e.log $tempDir/compile_eeyore_runtime.log
 			if [ $errCode = 124 ]
 			then 
