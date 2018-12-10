@@ -88,6 +88,7 @@ We also build a new format file used for auto-mailing system. The format file is
 - bin: Executable binary files, which will be regenerated when running installation.
 - config: Config files for ***heirloom-mailx*** and ***vsftpd***. Mail-format file are also held here.
 - lib: Lib used for compiling.
+- sample: Homework samples used for Minic Checker's debug.
 - scripts: Scripts used for MiniC Checker.
 - src: Source file for simulator or mail-format file interpreter.
 - test_src: Test set used for test.
