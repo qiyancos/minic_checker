@@ -42,7 +42,7 @@ niC源代码直接生成RISCV的64bit汇编代码。
                                  Default Shell: bash
 
                                   Software Support:
-                                MiniC Checker: v1.8.0
+                                MiniC Checker: v1.8.1
                                GCC/G++: Version 5.4.0
                   flex(2.6.0), lex(2.6.0), bison(3.0.4), yacc(3.0.4)
 

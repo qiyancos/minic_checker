@@ -70,12 +70,12 @@ checkLab(){
 		
 		$installPath/scripts/secure_mode -start
 		if [ -f ./makefile -o -f ./Makefile ]
-		then echo -e "cd $tiggerDir\nmake" | timeout $cpTimeOut su - $userName > $tempDir/compile_tigger.log 2>&1 
+		then echo -e "cd $tiggerDir\nmake" | timeout -k $cpTimeOut su - $userName > $tempDir/compile_tigger.log 2>&1 
 		elif [ -f ./compile ]
 		then 
 			chmod +x ./compile
 			sed -i 's///g' ./compile
-			echo -e "cd $tiggerDir\nbash ./compile" | timeout $cpTimeOut su - $userName > $tempDir/compile_tigger.log 2>&1
+			echo -e "cd $tiggerDir\nbash ./compile" | timeout -k $cpTimeOut su - $userName > $tempDir/compile_tigger.log 2>&1
 		else 
 			mailFormat=NO_COMPILE_METHOD
 			echo "Error: Cann't find an appropriate method to compile your source file!" >> $logDir/tigger.rep
@@ -124,7 +124,7 @@ checkLab(){
 			then
 				# Use tiggerC compile C file
 				checkRun chmod 555 -R $tiggerDir
-				echo -e "cd $tiggerDir\n./tiggerC < $ftpTemp/test_$SID.c" | timeout $runTimeOut su - $userName  > $ftpTemp/test_$SID.t 2> $tempDir/compile_tigger_c2t.log
+				echo -e "cd $tiggerDir\n./tiggerC < $ftpTemp/test_$SID.c" | timeout -k $runTimeOut su - $userName  > $ftpTemp/test_$SID.t 2> $tempDir/compile_tigger_c2t.log
 				errCode=$?
 				checkRun chmod 777 -R $tiggerDir
 				checkRun cp $tempDir/compile_tigger_c2t.log $tempDir/compile_tigger_runtime.log
@@ -149,7 +149,7 @@ checkLab(){
 			else
 				# Use eeyore compile C file
 				checkRun chmod 555 -R $tiggerDir
-				echo -e "cd $tiggerDir\n./eeyore < $ftpTemp/test_$SID.c" | timeout $runTimeOut su - $userName  > $ftpTemp/test_$SID.e 2> $tempDir/compile_tigger_c2e.log
+				echo -e "cd $tiggerDir\n./eeyore < $ftpTemp/test_$SID.c" | timeout -k $runTimeOut su - $userName  > $ftpTemp/test_$SID.e 2> $tempDir/compile_tigger_c2e.log
 				errCode=$?
 				checkRun chmod 777 -R $tiggerDir
 				checkRun cp $tempDir/compile_tigger_c2e.log $tempDir/compile_tigger_runtime.log
@@ -174,7 +174,7 @@ checkLab(){
 			
 				# Use tigger compile eeyore file
 				checkRun chmod 555 -R $tiggerDir
-				echo -e "cd $tiggerDir\n./tigger < $ftpTemp/test_$SID.e" | timeout $runTimeOut su - $userName  > $ftpTemp/test_$SID.t 2> $tempDir/compile_tigger_e2t.log
+				echo -e "cd $tiggerDir\n./tigger < $ftpTemp/test_$SID.e" | timeout -k $runTimeOut su - $userName  > $ftpTemp/test_$SID.t 2> $tempDir/compile_tigger_e2t.log
 				errCode=$?
 				checkRun chmod 777 -R $tiggerDir
 				checkRun cp $tempDir/compile_tigger_e2t.log $tempDir/compile_tigger_runtime.log
@@ -201,8 +201,8 @@ checkLab(){
 			
 			# Simulating tigger file
 			if [ -f $testDir/$testName.input ]
-			then timeout $runTimeOut sudo $installPath/bin/Tigger $ftpTemp/test_$SID.t < $testDir/$testName.input > $tempDir/${testName}_$SID.result 2> $tempDir/simulate_tigger.log
-			else timeout $runTimeOut sudo $installPath/bin/Tigger $ftpTemp/test_$SID.t > $tempDir/${testName}_$SID.result 2> $tempDir/simulate_tigger.log
+			then timeout -k $runTimeOut sudo $installPath/bin/Tigger $ftpTemp/test_$SID.t < $testDir/$testName.input > $tempDir/${testName}_$SID.result 2> $tempDir/simulate_tigger.log
+			else timeout -k $runTimeOut sudo $installPath/bin/Tigger $ftpTemp/test_$SID.t > $tempDir/${testName}_$SID.result 2> $tempDir/simulate_tigger.log
 			fi
 			errCode=$?
 			if [ $errCode = 124 ]

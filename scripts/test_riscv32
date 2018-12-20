@@ -71,12 +71,12 @@ checkLab(){
 		
 		$installPath/scripts/secure_mode -start
 		if [ -f ./makefile -o -f ./Makefile ]
-		then echo -e "cd $riscv32Dir\nmake" | timeout $cpTimeOut su - $userName > $tempDir/compile_riscv32.log 2>&1 
+		then echo -e "cd $riscv32Dir\nmake" | timeout -k $cpTimeOut su - $userName > $tempDir/compile_riscv32.log 2>&1 
 		elif [ -f ./compile ]
 		then 
 			chmod +x ./compile
 			sed -i 's///g' ./compile
-			echo -e "cd $riscv32Dir\nbash ./compile" | timeout $cpTimeOut su - $userName > $tempDir/compile_riscv32.log 2>&1
+			echo -e "cd $riscv32Dir\nbash ./compile" | timeout -k $cpTimeOut su - $userName > $tempDir/compile_riscv32.log 2>&1
 		else 
 			mailFormat=NO_COMPILE_METHOD
 			echo "Error: Cann't find an appropriate method to compile your source file!" >> $logDir/riscv32.rep
@@ -124,7 +124,7 @@ checkLab(){
 			then
 				# Use riscv32C compile C file
 				checkRun chmod 555 -R $riscv32Dir
-				echo -e "cd $riscv32Dir\n./riscv32C < $ftpTemp/test_$SID.c" | timeout $runTimeOut su - $userName  > $ftpTemp/test_$SID.s 2> $tempDir/compile_riscv32_c2s.log
+				echo -e "cd $riscv32Dir\n./riscv32C < $ftpTemp/test_$SID.c" | timeout -k $runTimeOut su - $userName  > $ftpTemp/test_$SID.s 2> $tempDir/compile_riscv32_c2s.log
 				errCode=$?
 				checkRun chmod 777 -R $riscv32Dir
 				checkRun cp $tempDir/compile_riscv32_c2s.log $tempDir/compile_riscv32_runtime.log
@@ -149,7 +149,7 @@ checkLab(){
 			else
 				# Use eeyore compile C file
 				checkRun chmod 555 -R $riscv32Dir
-				echo -e "cd $riscv32Dir\n./eeyore < $ftpTemp/test_$SID.c" | timeout $runTimeOut su - $userName  > $ftpTemp/test_$SID.e 2> $tempDir/compile_riscv32_c2e.log
+				echo -e "cd $riscv32Dir\n./eeyore < $ftpTemp/test_$SID.c" | timeout -k $runTimeOut su - $userName  > $ftpTemp/test_$SID.e 2> $tempDir/compile_riscv32_c2e.log
 				errCode=$?
 				checkRun chmod 777 -R $riscv32Dir
 				checkRun cp $tempDir/compile_riscv32_c2e.log $tempDir/compile_riscv32_runtime.log
@@ -174,7 +174,7 @@ checkLab(){
 			
 				# Use tigger compile eeyore file
 				checkRun chmod 555 -R $riscv32Dir
-				echo -e "cd $riscv32Dir\n./tigger < $ftpTemp/test_$SID.e" | timeout $runTimeOut su - $userName  > $ftpTemp/test_$SID.t 2> $tempDir/compile_riscv32_e2t.log
+				echo -e "cd $riscv32Dir\n./tigger < $ftpTemp/test_$SID.e" | timeout -k $runTimeOut su - $userName  > $ftpTemp/test_$SID.t 2> $tempDir/compile_riscv32_e2t.log
 				errCode=$?
 				checkRun chmod 777 -R $riscv32Dir
 				checkRun cp $tempDir/compile_riscv32_e2t.log $tempDir/compile_riscv32_runtime.log
@@ -199,7 +199,7 @@ checkLab(){
 
 				# Use riscv32 compile tigger file
 				checkRun chmod 555 -R $riscv32Dir
-				echo -e "cd $riscv32Dir\n./riscv32 < $ftpTemp/test_$SID.t" | timeout $runTimeOut su - $userName  > $ftpTemp/test_$SID.s 2> $tempDir/compile_riscv32_t2s.log
+				echo -e "cd $riscv32Dir\n./riscv32 < $ftpTemp/test_$SID.t" | timeout -k $runTimeOut su - $userName  > $ftpTemp/test_$SID.s 2> $tempDir/compile_riscv32_t2s.log
 				errCode=$?
 				checkRun chmod 777 -R $riscv32Dir
 				checkRun cp $tempDir/compile_riscv32_t2s.log $tempDir/compile_riscv32_runtime.log
@@ -225,7 +225,7 @@ checkLab(){
 			$installPath/scripts/secure_mode -stop
 			
 			# Compiling assemble language to machine language
-			timeout $runTimeOut $riscvPath/riscv32-unknown-linux-gnu-gcc $ftpTemp/test_$SID.s $installPath/lib/lib32.s -static -o $ftpTemp/test_$SID > $tempDir/compile_riscv32_s2o.log 2>&1
+			timeout -k $runTimeOut $riscvPath/riscv32-unknown-linux-gnu-gcc $ftpTemp/test_$SID.s $installPath/lib/lib32.s -static -o $ftpTemp/test_$SID > $tempDir/compile_riscv32_s2o.log 2>&1
 			errCode=$?
 			checkRun cp $tempDir/compile_riscv32_s2o.log $tempDir/compile_riscv32_runtime.log
 			if [ $errCode = 124 ]
@@ -247,8 +247,8 @@ checkLab(){
 
 			# Simulating riscv32 elf file
 			if [ -f $testDir/$testName.input ]
-			then timeout $runTimeOut sudo $riscvPath/riscv32-unknown-linux-gnu-run $ftpTemp/test_$SID < $testDir/$testName.input > $tempDir/${testName}_$SID.result 2> $tempDir/simulate_riscv32.log
-			else timeout $runTimeOut sudo $riscvPath/riscv32-unknown-linux-gnu-run $tempDir/${testName}_$SID > $tempDir/${testName}_$SID.result 2> $tempDir/simulate_riscv32.log
+			then timeout -k $runTimeOut sudo $riscvPath/riscv32-unknown-linux-gnu-run $ftpTemp/test_$SID < $testDir/$testName.input > $tempDir/${testName}_$SID.result 2> $tempDir/simulate_riscv32.log
+			else timeout -k $runTimeOut sudo $riscvPath/riscv32-unknown-linux-gnu-run $tempDir/${testName}_$SID > $tempDir/${testName}_$SID.result 2> $tempDir/simulate_riscv32.log
 			fi
 			errCode=$?
 			if [ $errCode = 124 ]
