@@ -70,11 +70,12 @@ checkLab(){
 		
 		$installPath/scripts/secure_mode -start
 		if [ -f ./makefile -o -f ./Makefile ]
-		then echo -e "cd $eeyoreDir\nmake" | timeout -k $cpTimeout $cpTimeOut su - $userName > $tempDir/compile_eeyore.log 2>&1 
+		then echo -e "cd $eeyoreDir\nmake" | timeout -k $cpTimeOut $cpTimeOut su - $userName > $tempDir/compile_eeyore.log 2>&1 
 		elif [ -f ./compile ]
 		then 
 			chmod +x ./compile
-			sed -i 's///g' ./compile
+			sed -i 's/
+//g' ./compile
 			echo -e "cd $eeyoreDir\nbash ./compile" | timeout -k $cpTimeOut $cpTimeOut su - $userName > $tempDir/compile_eeyore.log 2>&1
 		else 
 			mailFormat=NO_COMPILE_METHOD
